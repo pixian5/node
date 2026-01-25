@@ -443,10 +443,8 @@ echo "vless://$MY_GUID@$SUB_DOMAIN:8443?security=reality&pbk=$PUBLIC_KEY&sid=$SH
 echo ""
 echo "✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ "
 ULTIMATE_EOF
-
 bash /root/ultimate_xbz_2026.sh
-
 systemctl daemon-reload
 systemctl enable ultimate-xbz-boot.service
-#echo "✅ 已设置开机自启：/root/ultimate_xbz_2026.sh"
+#echo "✅ 设置开机自启：/root/ultimate_xbz_2026.sh"
 systemctl status ultimate-xbz-boot.service

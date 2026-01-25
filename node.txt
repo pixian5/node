@@ -1,0 +1,4 @@
+- {name: "Reality-o10", type: vless, server: o10.xbz.email, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: tcp, tls: true, flow: xtls-rprx-vision, servername: www.microsoft.com, reality-opts: {public-key: o31svtoqpvsGQj1oQdvb94t92-As_hkvaZ5a9ALulhM, short-id: 65978f99df803d2d}, client-fingerprint: firefox}
+- {name: "Hy2-o10", type: hysteria2, server: o10.xbz.email, port: 443, password: 41d4f8b3-2a45-4531-a33b-938e2eebb939, obfs: salamander, obfs-password: sbxbz19890604, sni: o10.xbz.email}
+- {name: "XHTTP-CDN-o10", type: vless, server: o10vx.xbz.email, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, tls: true, servername: o10vx.xbz.email, network: xhttp, xhttp-opts: {path: /xbz-vx}}
+

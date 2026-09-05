@@ -4,7 +4,7 @@ dns:
   use-hosts: true
   use-system-hosts: true
   ipv6: false
-  # 保持监听全部网卡；Clash Party 开启局域网共享后，局域网客户端可使用此 DNS 服务。
+  # 保持监听全部网卡；Clash mihomo 开启局域网共享后，局域网客户端可使用此 DNS 服务。
   listen: 0.0.0.0:1053
 
   enhanced-mode: fake-ip

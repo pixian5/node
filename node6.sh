@@ -132,14 +132,16 @@ echo "         3.1 安装/更新singbox内核"
 
 cat > "$BZ_UPD_SH" << 'BZ_UPD_SHEOF'
 #!/bin/bash
+# sing-box 自动更新：下载→备份→覆盖→重启→健康检查，失败自动回滚
 BZ_BIN="/usr/local/bin/bz"
+BZ_SVC="bz"
+BZ_PORTS="443 8443"
 LATEST=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name | sed 's/v//')
-if [ -f "$BZ_BIN" ]; then
-    CURRENT=$($BZ_BIN version | head -n1 | awk '{print $3}')
-    if [ "$CURRENT" = "$LATEST" ]; then
-        echo "      ✅ Sing-box 已是最新版本 ($LATEST)，跳过下载。"
-        exit 0
-    fi
+CURRENT=""
+[ -f "$BZ_BIN" ] && CURRENT=$($BZ_BIN version | head -n1 | awk '{print $3}')
+if [ -n "$CURRENT" ] && [ "$CURRENT" = "$LATEST" ]; then
+    echo "      ✅ Sing-box 已是最新版本 ($LATEST)，跳过下载。"
+    exit 0
 fi
 case "$(uname -m)" in
     x86_64|amd64)          S_ARCH="amd64" ;;
@@ -147,24 +149,41 @@ case "$(uname -m)" in
     s390x)                 S_ARCH="s390x" ;;
     *) echo "❌ 不支持的 CPU 架构: $(uname -m)"; exit 1 ;;
 esac
-tmp=$(mktemp -d); curl -Lo "$tmp/sb.tar.gz" "https://github.com/SagerNet/sing-box/releases/download/v${LATEST}/sing-box-${LATEST}-linux-${S_ARCH}.tar.gz"
-if [ -s "$tmp/sb.tar.gz" ]; then
-    tar -zxf "$tmp/sb.tar.gz" -C "$tmp" && mv "$tmp"/sing-box-*/sing-box $BZ_BIN && chmod +x $BZ_BIN
-    echo "      ✅ Sing-box 最新版安装完成 $LATEST"
+tmp=$(mktemp -d)
+if ! curl -sLo "$tmp/sb.tar.gz" "https://github.com/SagerNet/sing-box/releases/download/v${LATEST}/sing-box-${LATEST}-linux-${S_ARCH}.tar.gz" || [ ! -s "$tmp/sb.tar.gz" ]; then
+    echo "❌ 下载失败，保留当前版本 ${CURRENT:-未安装}"; rm -rf "$tmp"; exit 1
 fi
-rm -rf "$tmp"
+tar -zxf "$tmp/sb.tar.gz" -C "$tmp" || { echo "❌ 解压失败"; rm -rf "$tmp"; exit 1; }
+cp -f "$BZ_BIN" "$tmp/bz.old" 2>/dev/null
+cp -f "$tmp"/sing-box-*/sing-box "$BZ_BIN" && chmod +x "$BZ_BIN"
+systemctl restart "$BZ_SVC"; sleep 2
+health_ok=1
+systemctl is-active --quiet "$BZ_SVC" || health_ok=0
+for p in $BZ_PORTS; do
+    timeout 2 bash -c "echo > /dev/tcp/127.0.0.1/$p" 2>/dev/null || { health_ok=0; break; }
+done
+if [ "$health_ok" = "1" ]; then
+    echo "      ✅ Sing-box 更新完成 ${CURRENT:-未安装} -> $LATEST，健康检查通过"
+    rm -rf "$tmp"; exit 0
+fi
+echo "❌ 健康检查失败，回滚到 ${CURRENT:-旧版本}"
+cp -f "$tmp/bz.old" "$BZ_BIN" 2>/dev/null; chmod +x "$BZ_BIN"
+systemctl restart "$BZ_SVC"
+rm -rf "$tmp"; exit 1
 BZ_UPD_SHEOF
 echo "         3.2 安装/更新xray内核"
 cat > "$XBZ_UPD_SH" << 'XBZ_UPD_SHEOF'
 #!/bin/bash
+# xray 自动更新：下载→备份→覆盖→重启→健康检查，失败自动回滚
 XBZ_BIN="/usr/local/bin/xbz"
+XBZ_SVC="xbz"
+XBZ_PORTS="80 2053 2083"
 LATEST=$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | jq -r .tag_name | sed 's/v//')
-if [ -f "$XBZ_BIN" ]; then
-    CURRENT=$($XBZ_BIN version | head -n1 | awk '{print $2}')
-    if [ "$CURRENT" = "$LATEST" ]; then
-        echo "      ✅ Xray 已是最新版本 ($LATEST)，跳过下载。"
-        exit 0
-    fi
+CURRENT=""
+[ -f "$XBZ_BIN" ] && CURRENT=$($XBZ_BIN version | head -n1 | awk '{print $2}')
+if [ -n "$CURRENT" ] && [ "$CURRENT" = "$LATEST" ]; then
+    echo "      ✅ Xray 已是最新版本 ($LATEST)，跳过下载。"
+    exit 0
 fi
 case "$(uname -m)" in
     x86_64|amd64)          X_ARCH="64" ;;
@@ -172,12 +191,27 @@ case "$(uname -m)" in
     s390x)                 X_ARCH="s390x" ;;
     *) echo "❌ 不支持的 CPU 架构: $(uname -m)"; exit 1 ;;
 esac
-tmp=$(mktemp -d); curl -Lo "$tmp/xr.zip" "https://github.com/XTLS/Xray-core/releases/download/v${LATEST}/Xray-linux-${X_ARCH}.zip"
-if [ -s "$tmp/xr.zip" ]; then
-    unzip -q "$tmp/xr.zip" -d "$tmp" && mv "$tmp/xray" $XBZ_BIN && chmod +x $XBZ_BIN
-    echo "      ✅ Xray 最新版安装完成 $LATEST"
+tmp=$(mktemp -d)
+if ! curl -sLo "$tmp/xr.zip" "https://github.com/XTLS/Xray-core/releases/download/v${LATEST}/Xray-linux-${X_ARCH}.zip" || [ ! -s "$tmp/xr.zip" ]; then
+    echo "❌ 下载失败，保留当前版本 ${CURRENT:-未安装}"; rm -rf "$tmp"; exit 1
 fi
-rm -rf "$tmp"
+unzip -q "$tmp/xr.zip" -d "$tmp" || { echo "❌ 解压失败"; rm -rf "$tmp"; exit 1; }
+cp -f "$XBZ_BIN" "$tmp/xr.old" 2>/dev/null
+cp -f "$tmp/xray" "$XBZ_BIN" && chmod +x "$XBZ_BIN"
+systemctl restart "$XBZ_SVC"; sleep 2
+health_ok=1
+systemctl is-active --quiet "$XBZ_SVC" || health_ok=0
+for p in $XBZ_PORTS; do
+    timeout 2 bash -c "echo > /dev/tcp/127.0.0.1/$p" 2>/dev/null || { health_ok=0; break; }
+done
+if [ "$health_ok" = "1" ]; then
+    echo "      ✅ Xray 更新完成 ${CURRENT:-未安装} -> $LATEST，健康检查通过"
+    rm -rf "$tmp"; exit 0
+fi
+echo "❌ 健康检查失败，回滚到 ${CURRENT:-旧版本}"
+cp -f "$tmp/xr.old" "$XBZ_BIN" 2>/dev/null; chmod +x "$XBZ_BIN"
+systemctl restart "$XBZ_SVC"
+rm -rf "$tmp"; exit 1
 XBZ_UPD_SHEOF
 
 chmod +x "$BZ_UPD_SH" "$XBZ_UPD_SH"

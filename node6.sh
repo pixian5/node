@@ -141,7 +141,12 @@ if [ -f "$BZ_BIN" ]; then
         exit 0
     fi
 fi
-ARCH=$(uname -m); [ "$ARCH" = "x86_64" ] && S_ARCH="amd64" || S_ARCH="arm64"
+case "$(uname -m)" in
+    x86_64|amd64)          S_ARCH="amd64" ;;
+    aarch64|arm64)         S_ARCH="arm64" ;;
+    s390x)                 S_ARCH="s390x" ;;
+    *) echo "❌ 不支持的 CPU 架构: $(uname -m)"; exit 1 ;;
+esac
 tmp=$(mktemp -d); curl -Lo "$tmp/sb.tar.gz" "https://github.com/SagerNet/sing-box/releases/download/v${LATEST}/sing-box-${LATEST}-linux-${S_ARCH}.tar.gz"
 if [ -s "$tmp/sb.tar.gz" ]; then
     tar -zxf "$tmp/sb.tar.gz" -C "$tmp" && mv "$tmp"/sing-box-*/sing-box $BZ_BIN && chmod +x $BZ_BIN

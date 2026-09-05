@@ -212,6 +212,90 @@ rules:
 - DOMAIN,vd.l.qq.com,DIRECT
 - DOMAIN,dl.google.com,DIRECT
 - DOMAIN-SUFFIX,baidustatic.com,DIRECT
+# 自定义分流规则
+- DOMAIN-SUFFIX,doubao.com,DIRECT
+- DOMAIN-SUFFIX,onecdn.static.microsoft,DIRECT
+- DOMAIN-SUFFIX,sbbz.tech,DIRECT
+- DOMAIN-SUFFIX,rawchat.cn,DIRECT
+- DOMAIN-SUFFIX,njznkjyx.top,DIRECT
+- DOMAIN-SUFFIX,kkbox.com,CF_V8_usa.visa.com_443
+- DOMAIN-SUFFIX,anyrouter.top,代理
+- DOMAIN-SUFFIX,rsiai.net,DIRECT
+- DOMAIN-SUFFIX,gemini.google,代理
+- DOMAIN-SUFFIX,zzzcoding.org,DIRECT
+- DOMAIN-SUFFIX,shu26.cfd,DIRECT
+- DOMAIN-SUFFIX,anzhiyu.com,代理
+- DOMAIN-SUFFIX,gitcode.com,DIRECT
+- DOMAIN-SUFFIX,hetaosu.xyz,代理
+- DOMAIN-SUFFIX,cn-shanghai.fcapp.run,DIRECT
+- DOMAIN-SUFFIX,abrdns.com,代理
+- DOMAIN-SUFFIX,sharedchat.cc,DIRECT
+- DOMAIN-SUFFIX,gitee.com,DIRECT
+- DOMAIN-SUFFIX,cloud.microsoft,代理
+- DOMAIN-SUFFIX,local,DIRECT
+- DOMAIN-SUFFIX,qcckyc.com,DIRECT
+- DOMAIN-SUFFIX,qcc.com,DIRECT
+- DOMAIN-SUFFIX,zte.home,DIRECT
+- DOMAIN-SUFFIX,itunes.apple.com,DIRECT
+- DOMAIN-SUFFIX,swcdn.apple.com,DIRECT
+- DOMAIN-KEYWORD,cdn-apple,DIRECT
+- DOMAIN-SUFFIX,music.apple.com,DIRECT
+- DOMAIN-KEYWORD,minimaxi,ai
+- DOMAIN-SUFFIX,saas.sin.fan,代理
+- DOMAIN-SUFFIX,cloudflare-ech.com,代理
+- DOMAIN-SUFFIX,openai.com,ai
+- DOMAIN-SUFFIX,chatgpt.com,ai
+- DOMAIN-SUFFIX,oaiusercontent.com,ai
+- DOMAIN-SUFFIX,openaicom-api-prod.com,ai
+- DOMAIN-SUFFIX,ai.com,ai
+- DOMAIN-SUFFIX,dola.com,ai
+- DOMAIN-KEYWORD,grok,ai
+- DOMAIN-SUFFIX,kwrt.lan,DIRECT
+- DOMAIN-KEYWORD,sharepoint,代理
+- DOMAIN-KEYWORD,Akamai,DIRECT
+- DOMAIN-KEYWORD,Cloudflare,代理
+- DOMAIN-KEYWORD,Fastly,DIRECT
+- DOMAIN-SUFFIX,dl.delivery.mp.microsoft.com,DIRECT
+- DOMAIN-SUFFIX,download.visualstudio.microsoft.com,DIRECT
+- DOMAIN-KEYWORD,microsoft,代理
+- DOMAIN-KEYWORD,dropbox,大流量
+- DOMAIN-KEYWORD,YouTube,大流量
+- DOMAIN-KEYWORD,googlevideo,大流量
+- DOMAIN-SUFFIX,google.com,ai
+- DOMAIN-SUFFIX,google.dev,ai
+- DOMAIN-SUFFIX,gemini.google.com,ai
+- 'DOMAIN-SUFFIX,xn--4gq62f52gdss.com,代理'
+- DOMAIN-SUFFIX,250a.com,DIRECT
+- 'DOMAIN-KEYWORD,Claude,ai'
+- 'DOMAIN-SUFFIX,cici.com,ai'
+- 'DOMAIN-KEYWORD,docker,代理'
+- 'DOMAIN-SUFFIX,meta.ai,ai'
+- 'DOMAIN-SUFFIX,instagram.com,ai'
+- 'DOMAIN-SUFFIX,meta.com,ai'
+- DOMAIN-SUFFIX,kaspersky-labs.com,代理
+- 'DOMAIN-SUFFIX,xn--4gq62f52gdss.club,代理'
+- 'DOMAIN-SUFFIX,xn--4gq62f52gdss.art,代理'
+- 'DOMAIN-SUFFIX,services.googleapis.cn,代理'
+- DOMAIN-SUFFIX,xn--ngstr-lra8j.com,代理
+- IP-CIDR,120.232.181.162/32,代理,no-resolve
+- IP-CIDR,120.241.147.226/32,代理,no-resolve
+- IP-CIDR,120.253.253.226/32,代理,no-resolve
+- IP-CIDR,120.253.255.162/32,代理,no-resolve
+- IP-CIDR,120.253.255.34/32,代理,no-resolve
+- IP-CIDR,120.253.255.98/32,代理,no-resolve
+- IP-CIDR,180.163.150.162/32,代理,no-resolve
+- IP-CIDR,180.163.150.34/32,代理,no-resolve
+- IP-CIDR,180.163.151.162/32,代理,no-resolve
+- IP-CIDR,180.163.151.34/32,代理,no-resolve
+- IP-CIDR,203.208.39.0/24,代理,no-resolve
+- IP-CIDR,203.208.40.0/24,代理,no-resolve
+- IP-CIDR,203.208.41.0/24,代理,no-resolve
+- IP-CIDR,203.208.43.0/24,代理,no-resolve
+- IP-CIDR,203.208.50.0/24,代理,no-resolve
+- IP-CIDR,220.181.174.162/32,代理,no-resolve
+- IP-CIDR,220.181.174.226/32,代理,no-resolve
+- IP-CIDR,220.181.174.34/32,代理,no-resolve
+
 # 广告和追踪规则优先于宽泛的国内直连规则
 - DOMAIN-KEYWORD,admarvel,REJECT
 - DOMAIN-KEYWORD,admaster,REJECT
@@ -1817,89 +1901,6 @@ rules:
 - DOMAIN-SUFFIX,tralog.ganji.com,REJECT
 - DOMAIN-SUFFIX,up.qingdaonews.com,REJECT
 - DOMAIN-SUFFIX,vaserviece.10jqka.com.cn,REJECT
-# 自定义分流规则
-- DOMAIN-SUFFIX,doubao.com,DIRECT
-- DOMAIN-SUFFIX,onecdn.static.microsoft,DIRECT
-- DOMAIN-SUFFIX,sbbz.tech,DIRECT
-- DOMAIN-SUFFIX,rawchat.cn,DIRECT
-- DOMAIN-SUFFIX,njznkjyx.top,DIRECT
-- DOMAIN-SUFFIX,kkbox.com,CF_V8_usa.visa.com_443
-- DOMAIN-SUFFIX,anyrouter.top,直连-美国1-优化线路-hy2
-- DOMAIN-SUFFIX,rsiai.net,DIRECT
-- DOMAIN-SUFFIX,gemini.google,直连-美国1-优化线路-hy2
-- DOMAIN-SUFFIX,zzzcoding.org,DIRECT
-- DOMAIN-SUFFIX,shu26.cfd,DIRECT
-- DOMAIN-SUFFIX,anzhiyu.com,代理
-- DOMAIN-SUFFIX,gitcode.com,DIRECT
-- DOMAIN-SUFFIX,hetaosu.xyz,代理
-- DOMAIN-SUFFIX,cn-shanghai.fcapp.run,DIRECT
-- DOMAIN-SUFFIX,abrdns.com,代理
-- DOMAIN-SUFFIX,sharedchat.cc,DIRECT
-- DOMAIN-SUFFIX,gitee.com,DIRECT
-- DOMAIN-SUFFIX,cloud.microsoft,代理
-- DOMAIN-SUFFIX,local,DIRECT
-- DOMAIN-SUFFIX,qcckyc.com,DIRECT
-- DOMAIN-SUFFIX,qcc.com,DIRECT
-- DOMAIN-SUFFIX,zte.home,DIRECT
-- DOMAIN-SUFFIX,itunes.apple.com,DIRECT
-- DOMAIN-SUFFIX,swcdn.apple.com,DIRECT
-- DOMAIN-KEYWORD,cdn-apple,DIRECT
-- DOMAIN-SUFFIX,music.apple.com,DIRECT
-- DOMAIN-KEYWORD,minimaxi,ai
-- DOMAIN-SUFFIX,saas.sin.fan,代理
-- DOMAIN-SUFFIX,cloudflare-ech.com,代理
-- DOMAIN-SUFFIX,openai.com,ai
-- DOMAIN-SUFFIX,chatgpt.com,ai
-- DOMAIN-SUFFIX,oaiusercontent.com,ai
-- DOMAIN-SUFFIX,openaicom-api-prod.com,ai
-- DOMAIN-SUFFIX,ai.com,ai
-- DOMAIN-SUFFIX,dola.com,ai
-- DOMAIN-KEYWORD,grok,ai
-- DOMAIN-SUFFIX,kwrt.lan,DIRECT
-- DOMAIN-KEYWORD,sharepoint,代理
-- DOMAIN-KEYWORD,Akamai,DIRECT
-- DOMAIN-KEYWORD,Cloudflare,代理
-- DOMAIN-KEYWORD,Fastly,DIRECT
-- DOMAIN-SUFFIX,dl.delivery.mp.microsoft.com,DIRECT
-- DOMAIN-SUFFIX,download.visualstudio.microsoft.com,DIRECT
-- DOMAIN-KEYWORD,microsoft,代理
-- DOMAIN-KEYWORD,dropbox,大流量
-- DOMAIN-KEYWORD,YouTube,大流量
-- DOMAIN-KEYWORD,googlevideo,大流量
-- DOMAIN-SUFFIX,google.com,ai
-- DOMAIN-SUFFIX,google.dev,ai
-- DOMAIN-SUFFIX,gemini.google.com,ai
-- 'DOMAIN-SUFFIX,xn--4gq62f52gdss.com,代理'
-- DOMAIN-SUFFIX,250a.com,DIRECT
-- 'DOMAIN-KEYWORD,Claude,ai'
-- 'DOMAIN-SUFFIX,cici.com,ai'
-- 'DOMAIN-KEYWORD,docker,代理'
-- 'DOMAIN-SUFFIX,meta.ai,ai'
-- 'DOMAIN-SUFFIX,instagram.com,ai'
-- 'DOMAIN-SUFFIX,meta.com,ai'
-- DOMAIN-SUFFIX,kaspersky-labs.com,代理
-- 'DOMAIN-SUFFIX,xn--4gq62f52gdss.club,代理'
-- 'DOMAIN-SUFFIX,xn--4gq62f52gdss.art,代理'
-- 'DOMAIN-SUFFIX,services.googleapis.cn,代理'
-- DOMAIN-SUFFIX,xn--ngstr-lra8j.com,代理
-- IP-CIDR,120.232.181.162/32,代理,no-resolve
-- IP-CIDR,120.241.147.226/32,代理,no-resolve
-- IP-CIDR,120.253.253.226/32,代理,no-resolve
-- IP-CIDR,120.253.255.162/32,代理,no-resolve
-- IP-CIDR,120.253.255.34/32,代理,no-resolve
-- IP-CIDR,120.253.255.98/32,代理,no-resolve
-- IP-CIDR,180.163.150.162/32,代理,no-resolve
-- IP-CIDR,180.163.150.34/32,代理,no-resolve
-- IP-CIDR,180.163.151.162/32,代理,no-resolve
-- IP-CIDR,180.163.151.34/32,代理,no-resolve
-- IP-CIDR,203.208.39.0/24,代理,no-resolve
-- IP-CIDR,203.208.40.0/24,代理,no-resolve
-- IP-CIDR,203.208.41.0/24,代理,no-resolve
-- IP-CIDR,203.208.43.0/24,代理,no-resolve
-- IP-CIDR,203.208.50.0/24,代理,no-resolve
-- IP-CIDR,220.181.174.162/32,代理,no-resolve
-- IP-CIDR,220.181.174.226/32,代理,no-resolve
-- IP-CIDR,220.181.174.34/32,代理,no-resolve
 # 其余直连及国内 IP 规则
 - DOMAIN-SUFFIX,tplogin.cn,DIRECT
 - DOMAIN-SUFFIX,wifi.cmcc,DIRECT
@@ -9607,20 +9608,3 @@ rules:
 # 兜底规则必须位于末尾
 - GEOIP,CN,DIRECT,no-resolve
 - MATCH,代理
-
-
-
-
-
-  
-
-
-  
-
-
-
-
-  
-
-
-  

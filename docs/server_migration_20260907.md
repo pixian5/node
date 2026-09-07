@@ -107,6 +107,12 @@ chmod +x /etc/rc.local
 **解决**：把 80（VLESS+WS 直连）和 2053（VLESS+XHTTP+Reality）两个 inbound 重新加回并 `systemctl restart xbz`。
 **教训**：全量重写配置前，先列清现有订阅里所有节点对应的端口，确保每个端口都有对应 inbound，加回后逐一验证监听与连通。
 
+### 7. 双订阅源不同步（c.sbbz.tech vs dy.sbbz.tech）
+**现象**：`dy.sbbz.tech` 打开的订阅比 `c.sbbz.tech` 少一个节点，且 WS-TLS 带旧 SNI、Reality 带旧密钥。
+**根因**：两者是**完全独立**的订阅源——`c.sbbz.tech` 是 Cloudflare Pages（数据在 Git sub.yaml，push 自动部署），`dy.sbbz.tech` 是 Cloudflare Worker（节点**硬编码**在 worker JS 里）。改节点只改了 c 的 sub.yaml，没更新 dy worker。
+**解决**：改 `dy` worker 源码（对齐所有节点：SNI、pbk、sid、补充新节点），执行 `npx wrangler deploy dy_worker.js --name dy --compatibility-date 2026-09-03` 重新部署。
+**教训**：本项目有**两个订阅源**，任何节点变更（增删节点、换证书 SNI、换 Reality 密钥）后，必须同时更新 `pages/c_deploy/sub.yaml` 和 `dy` worker 两处，并用 `curl` 分别核对两边节点列表与关键字段是否一致。
+
 ## DNS 记录（最终）
 | 子域名 | 指向 | proxied |
 |---|---|---|
@@ -121,8 +127,14 @@ chmod +x /etc/rc.local
 - 存在 `/etc/bz/reality.env`
 
 ## 订阅
-- 订阅地址：`https://c.sbbz.tech/sub`（小火箭通用）
-- 配置文件：`pages/c_deploy/sub.yaml`，push 到 GitHub `pixian5/node` main 分支自动部署到 Cloudflare Pages
+有两个独立订阅源，改动节点时**必须同步**：
+1. **`https://c.sbbz.tech/`**（Cloudflare Pages）
+   - 数据源：`pages/c_deploy/sub.yaml`，push 到 GitHub `pixian5/node` main 分支自动部署
+   - 因为站点根目录只有 sub.yaml 一个文件，Pages 会兜底返回：`/`、`/sub`、`/sub.yaml` 三个路径内容相同，**无需加 sub**
+2. **`https://dy.sbbz.tech/`**（Cloudflare Worker，名 `dy`）
+   - 数据源：worker 内**硬编码**的 HTML，节点用 vless:// 明文写在代码里
+   - 更新方式：改 worker 源码后执行 `npx wrangler deploy dy_worker.js --name dy --compatibility-date <日期>`
+   - Cloudflare API token 见全局账号，账号 `e16771787e0f6f85e8976ba3befb0c1b`
 
 ## 测试结论
 - 443 端口复用：✅ TLS1.3 握手 + `/videos`(WS) 返回 101 + VLESS 通道建立；`h2`(XHTTP) ALPN 握手成功

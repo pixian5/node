@@ -15,11 +15,12 @@
 ## 部署内容
 采用 **allxray 方案**（xray 承载全部 TCP，sing-box 只留 hy2）：
 - **xray (xbz 服务)** `/usr/local/bin/xbz`，配置 `/etc/xbz/config.json`
+  - TCP 443 → VLESS+TLS 端口复用（fallback）：`/videos` 分流 WS、`h2`/`/api/v1` 分流 XHTTP
   - TCP 8443 → VLESS+Reality
-  - TCP 443 → VLESS+WS+TLS (SNI: v9-y.douyinvod.com)
   - TCP 80 → VLESS+WS 直连
   - TCP 2083 → VLESS+XHTTP+CDN
   - TCP 2053 → VLESS+XHTTP+Reality
+  - 内部 127.0.0.1:18443(WS) / 18444(XHTTP) 供 443 fallback 还原
 - **sing-box (bz 服务)** `/usr/local/bin/bz`，配置 `/etc/bz/config.json`
   - UDP 443 → Hysteria2
 - 证书：acme.sh 通配符 `sbbz.tech`，位置 `/etc/bz/certs/`，有效期约 3 个月
@@ -64,6 +65,48 @@ chmod +x /etc/rc.local
 部署后 l.sbbz.tech / l80 / lvx2083 仍指向旧 IP。
 解决：手动用 Cloudflare API 更新 3 条 A 记录到 `148.100.112.30`。
 
+### 4. WS-TLS 直连超时：证书 SNI 与节点不匹配（重要）
+**现象**：订阅里 `443-WS-TLS` 节点超时，但直连端口 OK。
+**根因**：服务器通配证书 SAN 只有 `*.sbbz.tech`，而订阅节点写 `servername: v9-y.douyinvod.com`（证书里没有该域名）。客户端一旦校验证书就握手失败（日志 `TLS handshake error ... unknown certificate`）；只有 `skip-cert-verify:true` 才勉强能连。
+**解决**：把订阅节点 `servername`/`ws-opts.headers.Host` 从 `v9-y.douyinvod.com` 改为 `l.sbbz.tech`（证书 SAN 匹配），并关闭 `skip-cert-verify`。
+**教训**：节点 SNI 必须使用证书实际覆盖的域名，不能随意用第三方域名伪装，否则校验必失败。
+
+### 5. 443 端口复用（fallback）配置要点
+把 WS 和 XHTTP 同时收口到公网 443，对外只暴露一个 TLS 入口，靠 path/ALPN 分流：
+```json
+"inbounds": [{
+  "port": 443, "protocol": "vless",
+  "settings": {
+    "clients": [{"id": "41d4f8b3-2a45-4531-a33b-938e2eebb939"}],
+    "decryption": "none",
+    "fallbacks": [
+      {"alpn": "h2", "dest": 18444},        // XHTTP (h2)
+      {"path": "/videos", "dest": 18443}     // WS (http/1.1)
+    ]
+  },
+  "streamSettings": {
+    "network": "tcp", "security": "tls",
+    "tlsSettings": {
+      "certificates": [{"certificateFile": "/etc/bz/certs/server.crt", "keyFile": "/etc/bz/certs/server.key"}],
+      "serverName": "l.sbbz.tech", "alpn": ["h2", "http/1.1"]
+    }
+  }
+}, {"port": 18443, "listen": "127.0.0.1", "protocol": "vless", "streamSettings": {"network": "ws", "security": "none", "wsSettings": {"path": "/videos"}}},
+   {"port": 18444, "listen": "127.0.0.1", "protocol": "vless", "streamSettings": {"network": "xhttp", "security": "none", "xhttpSettings": {"path": "/api/v1", "mode": "auto"}}}]
+```
+**关键点（易错）**：
+- `fallbacks` 必须写在 `inbounds[].settings.fallbacks`（VLESS settings 内），**不是** `streamSettings.tlsSettings.fallbacks`。
+- 主入口必须是 `network:tcp + security:tls` 且 `alpn` 含 `h2` + `http/1.1`。
+- WS 走 `http/1.1` + `path` 分流；XHTTP 走 `h2` + `alpn` 分流。
+- 内部端口 `127.0.0.1` 用裸协议（`security:none`），因为外层 443 已完成 TLS 终止。
+- 订阅对应新增节点：`443-WS-TLS`（path /videos）、`443-XHTTP-get-v1`（path /api/v1）。
+
+### 6. 重写配置时误删端口导致节点从外部超时
+**现象**：某次完整重写 config.json 后，订阅里 `80-WS` 和 `2053-XHTTP-Reality` 节点突然不通。
+**根因**：重写时只保留了 443/8443/2083，**忘了重新加入 80 和 2053 两个 inbound**，服务端根本没监听这两个端口。
+**解决**：把 80（VLESS+WS 直连）和 2053（VLESS+XHTTP+Reality）两个 inbound 重新加回并 `systemctl restart xbz`。
+**教训**：全量重写配置前，先列清现有订阅里所有节点对应的端口，确保每个端口都有对应 inbound，加回后逐一验证监听与连通。
+
 ## DNS 记录（最终）
 | 子域名 | 指向 | proxied |
 |---|---|---|
@@ -82,6 +125,8 @@ chmod +x /etc/rc.local
 - 配置文件：`pages/c_deploy/sub.yaml`，push 到 GitHub `pixian5/node` main 分支自动部署到 Cloudflare Pages
 
 ## 测试结论
-- WS-TLS 443：✅ TLS1.3 握手 + WS 101 升级 + VLESS 通道建立
+- 443 端口复用：✅ TLS1.3 握手 + `/videos`(WS) 返回 101 + VLESS 通道建立；`h2`(XHTTP) ALPN 握手成功
 - WS 直连 80：✅ WS 101 升级 + VLESS 通道建立
-- Reality 8443 / XHTTP 2053 / XHTTP-CDN 2083 / hy2 443：服务监听正常（Reality/XHTTP 需专用客户端，裸连接不响应属正常）
+- Reality 8443：✅ 公钥 `IRn6xu8uB2Fd5-HtjnxcxNZdpAO142tttM-KH8qVpUM` 与服务器私钥推导一致
+- XHTTP-Reality 2053：✅ TCP 监听开放（Reality 需专用客户端，裸连接不响应属正常）
+- XHTTP-CDN 2083 / hy2 443：服务监听正常

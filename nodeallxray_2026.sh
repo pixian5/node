@@ -4,7 +4,7 @@ cat > /root/ultimate_allxray_2026.sh << 'ULTIMATE_EOF'
 # nodeallxray_2026.sh — xray 承载全部 TCP 节点，sing-box 只留 Hysteria2(UDP)
 # 基于 node6.sh 重构。把 Reality(8443)、WS-TLS(443/TCP) 从 sing-box 迁入 xray。
 # sing-box 精简为仅承载 hy2(443/UDP)。
-# 版本：0.0.3
+# 版本：0.0.4
 # =====================================================================
 
 # ================= 配置变量区 =================
@@ -37,7 +37,7 @@ GTS_EAB_KID="878a7b1b4d9971e19f43502f08c00605"
 GTS_EAB_HMAC="BgILC_5utbdBOM4gFi_0bPbZnzCqwA3P0G7Ka-G1sLXyHWMDrE5sp_es1bd_jXcZET8QXd75cBEqZS9xf4CGcZg"
 
 echo "================================================================="
-echo "      ✨ allxray 0.0.3：xray 承载全部 TCP，sing-box 只留 hy2"
+echo "      ✨ allxray 0.0.4：xray 承载全部 TCP，sing-box 只留 hy2"
 echo "      ✨ 0. 基础环境准备 (apt update + 必要工具)"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
@@ -109,7 +109,7 @@ BZ_BIN="/usr/local/bin/bz"; BZ_SVC="bz"; BZ_PORTS="443"
 LATEST=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name | sed 's/v//')
 CURRENT=""; [ -f "$BZ_BIN" ] && CURRENT=$($BZ_BIN version | head -n1 | awk '{print $3}')
 if [ -n "$CURRENT" ] && [ "$CURRENT" = "$LATEST" ]; then echo "sing-box 已最新 $LATEST"; exit 0; fi
-case "$(uname -m)" in x86_64|amd64) S_ARCH="amd64" ;; aarch64|arm64) S_ARCH="arm64" ;; s390x) S_ARCH="s390x" ;; *) exit 1 ;; esac
+case "$(uname -m)" in x86_64|amd64) S_ARCH="amd64" ;; aarch64|arm64) S_ARCH="arm64" ;; armv7l|armv7) S_ARCH="armv7" ;; armv8l) S_ARCH="armv8" ;; s390x) S_ARCH="s390x" ;; riscv64) S_ARCH="riscv64" ;; ppc64le) S_ARCH="ppc64le" ;; ppc64) S_ARCH="ppc64" ;; mips64le) S_ARCH="mips64le" ;; mips64) S_ARCH="mips64" ;; i686|i386|x86) S_ARCH="386" ;; *) echo "❌ 不支持的架构: $(uname -m)"; exit 1 ;; esac
 tmp=$(mktemp -d)
 curl -sLo "$tmp/sb.tar.gz" "https://github.com/SagerNet/sing-box/releases/download/v${LATEST}/sing-box-${LATEST}-linux-${S_ARCH}.tar.gz" || exit 1
 tar -zxf "$tmp/sb.tar.gz" -C "$tmp" || exit 1
@@ -125,7 +125,7 @@ XBZ_BIN="/usr/local/bin/xbz"; XBZ_SVC="xbz"; XBZ_PORTS="80 443 8443 2053 2083"
 LATEST=$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | jq -r .tag_name | sed 's/v//')
 CURRENT=""; [ -f "$XBZ_BIN" ] && CURRENT=$($XBZ_BIN version | head -n1 | awk '{print $2}')
 if [ -n "$CURRENT" ] && [ "$CURRENT" = "$LATEST" ]; then echo "xray 已最新 $LATEST"; exit 0; fi
-case "$(uname -m)" in x86_64|amd64) X_ARCH="64" ;; aarch64|arm64) X_ARCH="arm64-v8a" ;; s390x) X_ARCH="s390x" ;; *) exit 1 ;; esac
+case "$(uname -m)" in x86_64|amd64) X_ARCH="64" ;; aarch64|arm64) X_ARCH="arm64-v8a" ;; armv7l|armv7) X_ARCH="arm32-v7a" ;; armv6l|armv6) X_ARCH="arm32-v6" ;; armv5*|armv5) X_ARCH="arm32-v5" ;; s390x) X_ARCH="s390x" ;; riscv64) X_ARCH="riscv64" ;; ppc64le) X_ARCH="ppc64le" ;; ppc64) X_ARCH="ppc64" ;; mips64le) X_ARCH="mips64le" ;; mips64) X_ARCH="mips64" ;; i686|i386|x86) X_ARCH="32" ;; *) echo "❌ 不支持的架构: $(uname -m)"; exit 1 ;; esac
 tmp=$(mktemp -d)
 curl -sLo "$tmp/xr.zip" "https://github.com/XTLS/Xray-core/releases/download/v${LATEST}/Xray-linux-${X_ARCH}.zip" || exit 1
 unzip -q "$tmp/xr.zip" -d "$tmp" || exit 1

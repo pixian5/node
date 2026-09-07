@@ -162,7 +162,7 @@ chmod +x /etc/rc.local
 - 停止并释放 80/443/8443/2053/2083 端口
 - ufw 放行全部 TCP 端口 + udp 443
 - Cloudflare：创建/更新 `l.sbbz.tech`、`lvx2083.sbbz.tech`(CDN代理)、`l80.sbbz.tech` 三条 A 记录指向本机；配置 2083 回源规则
-- 下载安装最新 sing-box（`/usr/local/bin/bz`）与 xray（`/usr/local/bin/xbz`），含 s390x 架构
+- 下载安装最新 sing-box（`/usr/local/bin/bz`）与 xray（`/usr/local/bin/xbz`），`uname -m` 自动探测架构，已覆盖 x86_64/aarch64/armv7/armv6/armv5/s390x/riscv64/ppc64le/ppc64/mips64/mips64le/i386
 - 固化 Reality 密钥对到 `/etc/bz/reality.env`（新机自动生成，需同步更新两订阅源）
 - 写入 xray 与 sing-box 配置、systemd 服务、通配符证书（acme.sh DNS-01，LE/ZeroSSL/GTS 依次重试）
 - 配置开机自启 + 每日 acme/内核更新定时任务

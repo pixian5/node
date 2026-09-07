@@ -150,3 +150,25 @@ chmod +x /etc/rc.local
 - **服务器 443 端口复用只看 path/alpn 分流、不看 SNI**，所以伪装不影响连接，客户端依然连真实服务器 IP `148.100.112.30`（经 `l.sbbz.tech` 解析）
 - **mihomo 兼容性坑**：`c.sbbz.tech/sub`（mihomo 订阅）**新增节点必须同时挂入 `proxy-groups` 的"代理"select 组**，否则即使 `proxies:` 里已定义，客户端也只显示组内引用到的节点、看不到新节点。这通常是新增节点"不显示"的首查原因，其次才是节点字段兼容性（`vless + network:xhttp + tls` 带 `client-fingerprint` 时 mihomo 也可能丢弃，去掉即可）
 - 两订阅源节点改动需同步：`pages/c_deploy/sub.yaml`（c）与 `dy_worker.js`（dy）
+
+## 新服务器一键完整部署（nodeallxray_2026.sh v0.0.3）
+**用途**：在任何一台全新 Ubuntu 服务器上一条龙创建全部 7 节点（6 xray TCP + 1 sing-box hy2）。
+**运行前（人工/控制台）**：
+1. 把 `/Users/x/ed25519.pub`（`ssh-ed25519 ... root`）加入服务器 `linux1` 和 `root` 的 `~/.ssh/authorized_keys`
+2. 确认本机出口 IP 不被服务器 IP 白名单拦截（否则握手前即被断）
+3. 如需改子域名，先改脚本变量区 `MY_SUB`（默认 `l`）
+**脚本会自动**：
+- `apt update` + 装 `psmisc/tar/unzip/ca-certificates/openssl/curl/jq`
+- 停止并释放 80/443/8443/2053/2083 端口
+- ufw 放行全部 TCP 端口 + udp 443
+- Cloudflare：创建/更新 `l.sbbz.tech`、`lvx2083.sbbz.tech`(CDN代理)、`l80.sbbz.tech` 三条 A 记录指向本机；配置 2083 回源规则
+- 下载安装最新 sing-box（`/usr/local/bin/bz`）与 xray（`/usr/local/bin/xbz`），含 s390x 架构
+- 固化 Reality 密钥对到 `/etc/bz/reality.env`（新机自动生成，需同步更新两订阅源）
+- 写入 xray 与 sing-box 配置、systemd 服务、通配符证书（acme.sh DNS-01，LE/ZeroSSL/GTS 依次重试）
+- 配置开机自启 + 每日 acme/内核更新定时任务
+- 末尾打印全部 7 节点 Clash 配置与通用分享链接
+**节点-端口-内核对应**（端口全开放给 xray TCP / sing-box UDP）：
+- TCP 443：xray fallback 复用 → WS-TLS（`/videos`）+ XHTTP 免流（`/api/v1`）
+- TCP 80：WS 直连；TCP 8443：Reality；TCP 2083：XHTTP-CDN；TCP 2053：XHTTP-Reality
+- UDP 443：hy2（sing-box）
+**部署后仍需手动同步**：`pages/c_deploy/sub.yaml`（c 订阅）与 `dy_worker.js`（dy 订阅）中的 Reality `public-key`/`short-id`（如新服务器重新生成了密钥对）。

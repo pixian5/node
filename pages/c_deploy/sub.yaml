@@ -115,6 +115,7 @@ proxy-groups:
 
     - 80-WS-直连免流-l
     - 443-WS-TLS-免流-l
+    - 443-XHTTP-免流-get-v1-l
     - 歇斯底里l
     - Reality-l
     - XHTTP-Reality-l

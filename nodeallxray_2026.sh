@@ -4,7 +4,7 @@ cat > /root/ultimate_allxray_2026.sh << 'ULTIMATE_EOF'
 # nodeallxray_2026.sh — xray 承载全部 TCP 节点，sing-box 只留 Hysteria2(UDP)
 # 基于 node6.sh 重构。把 Reality(8443)、WS-TLS(443/TCP) 从 sing-box 迁入 xray。
 # sing-box 精简为仅承载 hy2(443/UDP)。
-# 版本：0.0.2
+# 版本：0.0.3
 # =====================================================================
 
 # ================= 配置变量区 =================
@@ -37,10 +37,11 @@ GTS_EAB_KID="878a7b1b4d9971e19f43502f08c00605"
 GTS_EAB_HMAC="BgILC_5utbdBOM4gFi_0bPbZnzCqwA3P0G7Ka-G1sLXyHWMDrE5sp_es1bd_jXcZET8QXd75cBEqZS9xf4CGcZg"
 
 echo "================================================================="
-echo "      ✨ allxray 0.0.2：xray 承载全部 TCP，sing-box 只留 hy2"
-systemctl stop bz xbz 2>/dev/null
-fuser -k 443/udp 443/tcp 80/tcp 8443/tcp 2083/tcp 2053/tcp 2>/dev/null
-
+echo "      ✨ allxray 0.0.3：xray 承载全部 TCP，sing-box 只留 hy2"
+echo "      ✨ 0. 基础环境准备 (apt update + 必要工具)"
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -y
+apt-get install -y psmisc tar unzip ca-certificates openssl curl jq
 bootstrap_cf_deps() {
   local miss=0
   command -v curl >/dev/null 2>&1 || miss=1
@@ -48,6 +49,8 @@ bootstrap_cf_deps() {
   if [ "$miss" -eq 1 ]; then apt-get install -y curl jq ca-certificates; fi
 }
 bootstrap_cf_deps
+systemctl stop bz xbz 2>/dev/null
+command -v fuser >/dev/null 2>&1 && fuser -k 443/udp 443/tcp 80/tcp 8443/tcp 2083/tcp 2053/tcp 2>/dev/null
 echo "开通防火墙端口"
 if command -v ufw >/dev/null; then
     ufw allow 443/tcp; ufw allow 443/udp; ufw allow 80/tcp; ufw allow 8443/tcp;
@@ -100,7 +103,6 @@ setup_origin_rule_batch() {
 setup_origin_rule_batch
 
 echo "      ✨ 3. 安装/更新 sing-box 与 xray 内核"
-apt-get install -y psmisc tar unzip ca-certificates
 cat > "$BZ_UPD_SH" << 'BZ_UPD_SHEOF'
 #!/bin/bash
 BZ_BIN="/usr/local/bin/bz"; BZ_SVC="bz"; BZ_PORTS="443"

@@ -4,7 +4,7 @@ cat > /root/ultimate_allxray_2026.sh << 'ULTIMATE_EOF'
 # nodeallxray_2026.sh — xray 承载全部 TCP 节点，sing-box 只留 Hysteria2(UDP)
 # 基于 node6.sh 重构。把 Reality(8443)、WS-TLS(443/TCP) 从 sing-box 迁入 xray。
 # sing-box 精简为仅承载 hy2(443/UDP)。
-# 版本：0.0.1
+# 版本：0.0.2
 # =====================================================================
 
 # ================= 配置变量区 =================
@@ -37,7 +37,7 @@ GTS_EAB_KID="878a7b1b4d9971e19f43502f08c00605"
 GTS_EAB_HMAC="BgILC_5utbdBOM4gFi_0bPbZnzCqwA3P0G7Ka-G1sLXyHWMDrE5sp_es1bd_jXcZET8QXd75cBEqZS9xf4CGcZg"
 
 echo "================================================================="
-echo "      ✨ allxray 0.0.1：xray 承载全部 TCP，sing-box 只留 hy2"
+echo "      ✨ allxray 0.0.2：xray 承载全部 TCP，sing-box 只留 hy2"
 systemctl stop bz xbz 2>/dev/null
 fuser -k 443/udp 443/tcp 80/tcp 8443/tcp 2083/tcp 2053/tcp 2>/dev/null
 
@@ -54,7 +54,7 @@ if command -v ufw >/dev/null; then
     ufw allow $PORT_CDN_VX/tcp; ufw allow $PORT_XHTTP_REALITY/tcp;
 fi
 
-echo "      ✨ 2. Cloudflare 回源规则 (CDN 2083)"
+echo "      ✨ 2. Cloudflare API 自动化"
 CF_API="https://api.cloudflare.com/client/v4"
 IP=$(curl -s https://api.ip.sb/ip || curl -s https://checkip.amazonaws.com)
 get_zone_id() {
@@ -63,6 +63,22 @@ get_zone_id() {
   [ -n "$zid" ] && echo "$zid" || { echo "❌ 获取 ZONE_ID 失败" >&2; return 1; }
 }
 ZONE_ID="$(get_zone_id)" || exit 1
+update_dns() {
+    local name=$1 && local proxied=$2
+    local rid=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?name=$name" -H "Authorization: Bearer $CF_TOKEN" | jq -r '.result[0].id')
+    local data=$(jq -n --arg type "A" --arg name "$name" --arg content "$IP" --argjson proxied $proxied '{"type":$type, "name":$name, "content":$content, "ttl":1, "proxied":$proxied}')
+    if [ "$rid" != "null" ] && [ -n "$rid" ]; then
+        curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$rid" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data "$data" >/dev/null
+    else
+        curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data "$data" >/dev/null
+    fi
+}
+update_dns "$SUB_DOMAIN" "false"
+update_dns "$VX_DOMAIN" "true"
+update_dns "$VX_DOMAIN80" "false"
+echo "      ✅ 域名 $SUB_DOMAIN、$VX_DOMAIN 和 $VX_DOMAIN80 已指向 IP：$IP"
+
+echo "      ✨ 2.1 Cloudflare 回源规则 (CDN 2083)"
 setup_origin_rule_batch() {
     local phase_origin="http_request_origin"
     local rs_origin=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/rulesets" -H "Authorization: Bearer $CF_TOKEN")
@@ -211,13 +227,81 @@ issue_cert_try() {
     local server="$1"; echo "      尝试 CA: $server"
     if [ "$server" = "zerossl" ]; then
         [ -z "$ZEROSSL_EAB_KID" ] || [ -z "$ZEROSSL_EAB_HMAC" ] && return 1
-        "$HOME/.acme.sh/acme.sh" --issue --dns dns_cf -d "$DOMAIN" -d "*.$DOMAIN" --keylength ec-256 --server "$server" --eab-kid "$ZEROSSL_EAB_KID" --eab-hmac-key "$ZEROSSL_EAB_HMAC"; return $?
+        "$HOME/.acme.sh/acme.sh" --issue --dns dns_cf -d "$DOMAIN" -d "*.$DOMAIN" --keylength ec-256 --server "$server" --eab-kid "$ZEROSSL_EAB_KID" --eab-hmac-key "$ZEROSSL_EAB_HMAC"
+        if [ $? -eq 0 ]; then CERT_CA="$server"; return 0; fi
+        return 1
     fi
     if [ "$server" = "google" ]; then
         [ -z "$GTS_EAB_KID" ] || [ -z "$GTS_EAB_HMAC" ] && return 1
-        "$HOME/.acme.sh/acme.sh" --issue --dns dns_cf -d "$DOMAIN" -d "*.$DOMAIN" --keylength ec-256 --server "$server" --eab-kid "$GTS_EAB_KID" --eab-hmac-key "$GTS_EAB_HMAC"; return $?
+        "$HOME/.acme.sh/acme.sh" --issue --dns dns_cf -d "$DOMAIN" -d "*.$DOMAIN" --keylength ec-256 --server "$server" --eab-kid "$GTS_EAB_KID" --eab-hmac-key "$GTS_EAB_HMAC"
+        if [ $? -eq 0 ]; then CERT_CA="$server"; return 0; fi
+        return 1
     fi
     "$HOME/.acme.sh/acme.sh" --issue --dns dns_cf -d "$DOMAIN" -d "*.$DOMAIN" --keylength ec-256 --server "$server"
+    if [ $? -eq 0 ]; then CERT_CA="$server"; return 0; fi
+    return 1
+}
+show_cert_status() {
+    local crt="$1"
+    local end
+    end=$(openssl x509 -in "$crt" -noout -enddate 2>/dev/null | cut -d= -f2-)
+    if [ -n "$end" ]; then
+        local end_ts now_ts days_left
+        end_ts=$(date -d "$end" +%s 2>/dev/null || echo 0)
+        now_ts=$(date +%s)
+        days_left=$(( (end_ts - now_ts) / 86400 ))
+        echo "      ✅ 证书有效期至：$end（剩余约 ${days_left} 天）"
+    else
+        echo "      ⚠️  无法读取证书有效期"
+    fi
+    local conf="$HOME/.acme.sh/${DOMAIN}_ecc/${DOMAIN}.conf"
+    if [ -s "$conf" ]; then
+        local next_ts
+        local next_str
+        next_ts=$(grep -E '^Le_NextRenewTime=' "$conf" | cut -d= -f2 | tr -d "\"'")
+        if [ -n "$next_ts" ]; then
+            next_str=$(date -d "@$next_ts" "+%F %T %Z" 2>/dev/null)
+            if [ -n "$next_str" ]; then
+                echo "      ✅ 下次续期时间：$next_str"
+            else
+                echo "      ⚠️  无法解析下次续期时间"
+            fi
+        else
+            echo "      ⚠️  未找到下次续期时间"
+        fi
+    else
+        echo "      ⚠️  未找到 acme.sh 续期记录文件"
+    fi
+}
+show_cert_ca() {
+    local crt="$1"
+    local issuer
+    issuer=$(openssl x509 -in "$crt" -noout -issuer 2>/dev/null | sed 's/^issuer= //')
+    if [ -n "$issuer" ]; then
+        echo "      ✅ 当前证书颁发者：$issuer"
+    else
+        echo "      ⚠️  无法读取证书颁发者"
+    fi
+}
+ca_friendly_name() {
+    local ca="$1"
+    case "$ca" in
+        letsencrypt) echo "Let's Encrypt" ;;
+        zerossl) echo "ZeroSSL" ;;
+        google) echo "Google Trust Services" ;;
+        *) echo "$ca" ;;
+    esac
+}
+ca_from_issuer() {
+    local crt="$1"
+    local issuer
+    issuer=$(openssl x509 -in "$crt" -noout -issuer 2>/dev/null)
+    case "$issuer" in
+        *"Let's Encrypt"*) echo "Let's Encrypt" ;;
+        *"ZeroSSL"*) echo "ZeroSSL" ;;
+        *"Google Trust Services"*) echo "Google Trust Services" ;;
+        *) echo "" ;;
+    esac
 }
 if [ -s "$CERT_DIR/server.crt" ] && [ -s "$CERT_DIR/server.key" ] && cert_matches_domain "$CERT_DIR/server.crt" && ! cert_expired "$CERT_DIR/server.crt"; then
     echo "      证书已就绪，跳过"
@@ -229,6 +313,22 @@ else
         "$HOME/.acme.sh/acme.sh" --install-cert -d "$DOMAIN" --ecc --key-file "$CERT_DIR/server.key" --fullchain-file "$CERT_DIR/server.crt" --reloadcmd "systemctl restart bz xbz"
         [ -s "$CERT_DIR/server.crt" ] && [ -s "$CERT_DIR/server.key" ] && cert_matches_domain "$CERT_DIR/server.crt" && CERT_OK=1
     fi
+fi
+if [ "${CERT_OK:-0}" -eq 1 ]; then
+    echo "      ✅ 通配符证书已就绪"
+    show_cert_status "$CERT_DIR/server.crt"
+    if [ -n "$CERT_CA" ]; then
+        echo "      ✅ 当前使用 CA：$(ca_friendly_name "$CERT_CA")"
+    else
+        local_ca="$(ca_from_issuer "$CERT_DIR/server.crt")"
+        if [ -n "$local_ca" ]; then
+            echo "      ✅ 当前使用 CA：$local_ca"
+        else
+            show_cert_ca "$CERT_DIR/server.crt"
+        fi
+    fi
+else
+    echo "      ❌ 通配符证书未就绪"
 fi
 
 systemctl enable bz xbz && systemctl restart bz xbz
@@ -253,7 +353,42 @@ SVC
  echo "0 21 * * * TZ=UTC $BZ_UPD_SH >/dev/null 2>&1"
  echo "0 22 * * * TZ=UTC $XBZ_UPD_SH >/dev/null 2>&1") | crontab -
 
-echo "      ✨ 7. 端口归属确认"
+echo "      ✨ 7. 节点输出"
+clear
+echo "=================================================================="
+echo "               ✨ ✨      AllXray  2026       ✨ ✨  "
+echo "=================================================================="
+echo "            ✨ ✨ 【1】Clash Party （Mihomo） 配置 ✨ ✨ "
+echo ""
+echo "- {name: \"80-WS-直连免流-${MY_SUB}\", type: vless, server: $SUB_DOMAIN, port: 80, uuid: $MY_GUID, network: ws, tls: false, ws-opts: {path: /videos, headers: {Host: $ML_HOST}}}"
+echo "- {name: \"443-WS-TLS-免流-${MY_SUB}\", type: vless, server: $SUB_DOMAIN, port: 443, uuid: $MY_GUID, network: ws, tls: true, skip-cert-verify: true, servername: $ML_HOST, ws-opts: {path: /videos, headers: {Host: $ML_HOST}}}"
+echo "- {name: \"443-XHTTP-免流-get-v1-${MY_SUB}\", type: vless, server: $SUB_DOMAIN, port: 443, uuid: $MY_GUID, network: xhttp, tls: true, udp: true, skip-cert-verify: true, servername: $ML_HOST, xhttp-opts: {path: /api/v1, host: $ML_HOST, mode: auto}}"
+echo "- {name: \"歇斯底里${MY_SUB}\", type: hysteria2, server: $SUB_DOMAIN, port: 443, password: $MY_GUID, obfs: salamander, obfs-password: $HY2_OBFS, sni: $SUB_DOMAIN}"
+echo "- {name: \"Reality-${MY_SUB}\", type: vless, server: $SUB_DOMAIN, port: 8443, uuid: $MY_GUID, network: tcp, tls: true, flow: xtls-rprx-vision, servername: $DEST_DOMAIN, reality-opts: {public-key: $PUBLIC_KEY, short-id: $SHORT_ID}, client-fingerprint: firefox}"
+echo "- {name: \"XHTTP-Reality-${MY_SUB}\", type: vless, server: $SUB_DOMAIN, port: $PORT_XHTTP_REALITY, uuid: $MY_GUID, network: xhttp, tls: true, udp: true, servername: $DEST_DOMAIN, client-fingerprint: firefox, reality-opts: {public-key: $PUBLIC_KEY, short-id: $SHORT_ID}, xhttp-opts: {path: /videos, mode: auto}}"
+echo "- {name: \"XHTTP-CDN-${MY_SUB}优选域名\", type: vless, server: $cf_domain, port: 443, uuid: $MY_GUID, network: xhttp, tls: true, udp: true, servername: $VX_DOMAIN, skip-cert-verify: true, xhttp-opts: {path: /videos, host: $VX_DOMAIN, mode: auto}}"
+echo ""
+echo "- 80-WS-直连免流-${MY_SUB}"
+echo "- 443-WS-TLS-免流-${MY_SUB}"
+echo "- 443-XHTTP-免流-get-v1-${MY_SUB}"
+echo "- 歇斯底里${MY_SUB}"
+echo "- Reality-${MY_SUB}"
+echo "- XHTTP-Reality-${MY_SUB}"
+echo "- XHTTP-CDN-${MY_SUB}优选域名"
+echo ""
+echo "=================================================================="
+echo "               ✨ ✨ 【2】通用分享链接 ✨ ✨ "
+echo ""
+echo "vless://$MY_GUID@$SUB_DOMAIN:80?encryption=none&security=none&type=ws&host=$ML_HOST&path=/videos#80-WS-直连免流-${MY_SUB}"
+echo "vless://$MY_GUID@$SUB_DOMAIN:443?encryption=none&security=tls&sni=$ML_HOST&type=ws&host=$ML_HOST&path=/videos&allowInsecure=1#443-WS-TLS-免流-${MY_SUB}"
+echo "vless://$MY_GUID@$SUB_DOMAIN:443?encryption=none&security=tls&sni=$ML_HOST&type=xhttp&path=/api/v1&host=$ML_HOST&allowInsecure=1&mode=auto#443-XHTTP-免流-get-v1-${MY_SUB}"
+echo "hysteria2://$MY_GUID@$SUB_DOMAIN:443/?obfs=salamander&obfs-password=$HY2_OBFS&sni=$SUB_DOMAIN#歇斯底里${MY_SUB}"
+echo "vless://$MY_GUID@$cf_domain:443?encryption=none&security=tls&sni=$VX_DOMAIN&type=xhttp&path=/videos#XHTTP-CDN-${MY_SUB}优选域名"
+echo "vless://$MY_GUID@$SUB_DOMAIN:$PORT_XHTTP_REALITY?security=reality&pbk=$PUBLIC_KEY&sid=$SHORT_ID&fp=firefox&type=xhttp&path=/videos&sni=$DEST_DOMAIN#XHTTP-Reality-${MY_SUB}"
+echo "vless://$MY_GUID@$SUB_DOMAIN:8443?security=reality&pbk=$PUBLIC_KEY&sid=$SHORT_ID&fp=firefox&type=tcp&flow=xtls-rprx-vision&sni=$DEST_DOMAIN#Reality-${MY_SUB}"
+echo ""
+echo "✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ "
+echo "      ✨ 8. 端口归属确认"
 echo "   TCP: 443(WS-TLS) 80(WS) 8443(Reality) 2083(XHTTP-CDN) 2053(XHTTP-Reality) = xray"
 echo "   UDP: 443(hy2) = sing-box"
 echo "✅ xray 承载全部 TCP，sing-box 只留 hy2，部署完成"

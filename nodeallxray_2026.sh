@@ -155,13 +155,15 @@ fi
 echo "      ✨ 5. 写入配置"
 mkdir -p "$CERT_DIR"
 
-echo "      ✨ 5.1 xray 承载全部 TCP 节点 (Reality 8443 / WS-TLS 443 / WS直连 80 / XHTTP-CDN 2083 / XHTTP-Reality 2053)"
+echo "      ✨ 5.1 xray 承载全部 TCP 节点 (Reality 8443 / 443端口复用[WS-TLS+ XHTTP免流] / WS直连 80 / XHTTP-CDN 2083 / XHTTP-Reality 2053)"
 cat > "$XBZ_CONF" << X_JSON
 {
     "log": { "loglevel": "info" },
     "inbounds": [
         {"port": 8443, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID", "flow": "xtls-rprx-vision"}], "decryption": "none"}, "streamSettings": {"network": "tcp", "security": "reality", "realitySettings": {"show": false, "dest": "$DEST_DOMAIN:443", "xver": 0, "serverNames": ["$DEST_DOMAIN"], "privateKey": "$PRIVATE_KEY", "shortIds": ["$SHORT_ID"]}}},
-        {"port": 443, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none"}, "streamSettings": {"network": "ws", "security": "tls", "tlsSettings": {"certificates": [{"certificateFile": "$CERT_DIR/server.crt", "keyFile": "$CERT_DIR/server.key"}], "serverName": "$ML_HOST"}, "wsSettings": {"path": "/videos", "headers": {"Host": "$ML_HOST"}}}},
+        {"port": 443, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none", "fallbacks": [{"alpn": "h2", "dest": 18444}, {"path": "/videos", "dest": 18443}]}, "streamSettings": {"network": "tcp", "security": "tls", "tlsSettings": {"certificates": [{"certificateFile": "$CERT_DIR/server.crt", "keyFile": "$CERT_DIR/server.key"}], "serverName": "$ML_HOST", "alpn": ["h2", "http/1.1"]}}},
+        {"port": 18443, "listen": "127.0.0.1", "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none"}, "streamSettings": {"network": "ws", "security": "none", "wsSettings": {"path": "/videos"}}},
+        {"port": 18444, "listen": "127.0.0.1", "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none"}, "streamSettings": {"network": "xhttp", "security": "none", "xhttpSettings": {"path": "/api/v1", "mode": "auto"}}},
         {"port": 80, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none"}, "streamSettings": {"network": "ws", "wsSettings": {"path": "/videos", "headers": {"Host": "$ML_HOST"}}}},
         {"port": $PORT_CDN_VX, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none"}, "streamSettings": {"network": "xhttp", "security": "tls", "tlsSettings": {"certificates": [{"certificateFile": "$CERT_DIR/server.crt", "keyFile": "$CERT_DIR/server.key"}], "serverName": "$VX_DOMAIN"}, "xhttpSettings": {"path": "/videos"}}},
         {"port": $PORT_XHTTP_REALITY, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none"}, "streamSettings": {"network": "xhttp", "security": "reality", "realitySettings": {"show": false, "dest": "$DEST_DOMAIN:443", "xver": 0, "serverNames": ["$DEST_DOMAIN"], "privateKey": "$PRIVATE_KEY", "shortIds": ["$SHORT_ID"]}, "xhttpSettings": {"path": "/videos"}}}
@@ -169,7 +171,7 @@ cat > "$XBZ_CONF" << X_JSON
     "outbounds": [{ "protocol": "freedom" }]
 }
 X_JSON
-echo "      ✅ xray 配置已写入 (5 个 TCP 入站)"
+echo "      ✅ xray 配置已写入 (6 个外部 TCP 节点: 8443 / 443[WS+XHTTP复用] / 80 / 2083 / 2053)"
 
 echo "      ✨ 5.2 sing-box 只保留 Hysteria2 (443/UDP)"
 cat > "$SBOX_CONF" << CONFIG
@@ -389,7 +391,7 @@ echo "vless://$MY_GUID@$SUB_DOMAIN:8443?security=reality&pbk=$PUBLIC_KEY&sid=$SH
 echo ""
 echo "✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ "
 echo "      ✨ 8. 端口归属确认"
-echo "   TCP: 443(WS-TLS) 80(WS) 8443(Reality) 2083(XHTTP-CDN) 2053(XHTTP-Reality) = xray"
+echo "   TCP: 443(WS-TLS path=/videos + XHTTP免流 path=/api/v1 端口复用) 80(WS) 8443(Reality) 2083(XHTTP-CDN) 2053(XHTTP-Reality) = xray"
 echo "   UDP: 443(hy2) = sing-box"
 echo "✅ xray 承载全部 TCP，sing-box 只留 hy2，部署完成"
 ULTIMATE_EOF

@@ -148,5 +148,5 @@ chmod +x /etc/rc.local
 ## 免流伪装与客户端兼容
 - **免流原理**：把客户端节点 TLS 的 `sni` 和 HTTP `host` 头伪装成运营商白名单的视频域名（如 `v9-y.douyinvod.com`），运营商流量检测误判为免流视频流量
 - **服务器 443 端口复用只看 path/alpn 分流、不看 SNI**，所以伪装不影响连接，客户端依然连真实服务器 IP `148.100.112.30`（经 `l.sbbz.tech` 解析）
-- **mihomo 兼容性坑**：`c.sbbz.tech/sub`（mihomo 订阅）里 `vless + network:xhttp + tls` 节点不能带 `client-fingerprint` 字段，否则 mihomo 解析会丢弃整个节点。去掉该字段、对齐 `XHTTP-CDN` 节点结构即可正常显示（TLS 默认指纹即 chrome，不影响握手）。dy worker（vless 通用链接）则保留 `allowInsecure=1` + `sni/host` 伪装即可
+- **mihomo 兼容性坑**：`c.sbbz.tech/sub`（mihomo 订阅）**新增节点必须同时挂入 `proxy-groups` 的"代理"select 组**，否则即使 `proxies:` 里已定义，客户端也只显示组内引用到的节点、看不到新节点。这通常是新增节点"不显示"的首查原因，其次才是节点字段兼容性（`vless + network:xhttp + tls` 带 `client-fingerprint` 时 mihomo 也可能丢弃，去掉即可）
 - 两订阅源节点改动需同步：`pages/c_deploy/sub.yaml`（c）与 `dy_worker.js`（dy）

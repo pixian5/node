@@ -64,7 +64,8 @@ proxies:
   dialer-proxy: 住宅入口
 
 - {name: "80-WS-直连免流-l", type: vless, server: l.sbbz.tech, port: 80, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: false, ws-opts: {path: /videos, headers: {Host: v9-y.douyinvod.com}}}
-- {name: "443-WS-TLS-免流-l", type: vless, server: l.sbbz.tech, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: true, skip-cert-verify: true, servername: v9-y.douyinvod.com, ws-opts: {path: /videos, headers: {Host: v9-y.douyinvod.com}}}
+- {name: "443-WS-TLS-免流-l", type: vless, server: l.sbbz.tech, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: true, skip-cert-verify: false, servername: l.sbbz.tech, ws-opts: {path: /videos, headers: {Host: l.sbbz.tech}}}
+- {name: "443-XHTTP-get-v1-l", type: vless, server: l.sbbz.tech, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: xhttp, tls: true, udp: true, servername: l.sbbz.tech, xhttp-opts: {path: /api/v1, mode: auto}}
 - {name: "歇斯底里l", type: hysteria2, server: l.sbbz.tech, port: 443, password: 41d4f8b3-2a45-4531-a33b-938e2eebb939, obfs: salamander, obfs-password: sbxbz19890604, sni: l.sbbz.tech}
 - {name: "Reality-l", type: vless, server: l.sbbz.tech, port: 8443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: tcp, tls: true, flow: xtls-rprx-vision, servername: itunes.apple.com, reality-opts: {public-key: IRn6xu8uB2Fd5-HtjnxcxNZdpAO142tttM-KH8qVpUM, short-id: d5b2242f8d6a7641}, client-fingerprint: firefox}
 - {name: "XHTTP-Reality-l", type: vless, server: l.sbbz.tech, port: 2053, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: xhttp, tls: true, udp: true, servername: itunes.apple.com, client-fingerprint: firefox, reality-opts: {public-key: IRn6xu8uB2Fd5-HtjnxcxNZdpAO142tttM-KH8qVpUM, short-id: d5b2242f8d6a7641}, xhttp-opts: {path: /videos, mode: auto}}

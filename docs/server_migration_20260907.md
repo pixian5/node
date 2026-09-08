@@ -113,6 +113,16 @@ chmod +x /etc/rc.local
 **解决**：改 `dy` worker 源码（对齐所有节点：SNI、pbk、sid、补充新节点），执行 `npx wrangler deploy dy_worker.js --name dy --compatibility-date 2026-09-03` 重新部署。
 **教训**：本项目有**两个订阅源**（c 供 mihomo、dy 供 v2rayN 等），任何节点变更（增删节点、换证书 SNI、换 Reality 密钥）后，必须同时更新 `pages/c_deploy/sub.yaml` 和 `dy` worker 两处，并用 `curl` 分别核对两边节点列表与关键字段是否一致。
 
+### 8. SSH"握手即断"根因 = 本机 TUN 路由环回，而非服务器封禁
+**现象**：`ssh` 时报 `kex_exchange_identification: Connection closed`，连接在协议协商前被服务端关闭；`nc -zv 22` 却显示 TCP 层连通。
+**根因**：**本机 TUN 代理（VPN 虚拟网卡）劫持了到目标服务器的路由**。`route -n get 148.100.112.30` 显示走 `utun1500`、网关 `198.18.0.1`，SSH 流量钻进 VPN 又被代理规则释放回服务器自身，形成环回。服务器视角是"来自本机/环回地址连自己的 SSH"，故握手即断。某些情况下还会连带触发服务器端防护误判。
+**排查方法**：
+1. `nc -zv -w6 <ip> 22`：TCP 通但 SSH 握手断 → 说明问题在上层（路由/防护）而非网络不通。
+2. `route -n get <ip>`：确认是否指向 `utun*`/假网关 `198.18.0.1`（证明被 TUN 接管）。
+3. 服务器端核验：是否装了 fail2ban/sshguard、`hosts.deny`、`sshd_config` 的 `MaxStartups/AllowUsers` 是否启用——本机改动后服务器端防护全为默认，无任何封禁。
+**解决**：改**本机**代理规则，把目标服务器 IP/域名加入直连（DIRECT）名单，或关闭 TUN，让 SSH 走真实线路。**不要在服务器上删 fail2ban/MaxStartups**——那既非根因，也因连不上而无从删起。
+**教训**：SSH 握手中断若发生在 `kex_exchange_identification` 阶段且 TCP 层连通，先查**本机 TUN/代理路由是否把目标 IP 环回**，再怀疑服务器封禁，避免走弯路（本次即首查方向反了）。
+
 ## DNS 记录（最终）
 | 子域名 | 指向 | proxied |
 |---|---|---|

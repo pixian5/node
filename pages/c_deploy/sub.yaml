@@ -220,7 +220,7 @@ rules:
 - DOMAIN-SUFFIX,sbbz.tech,DIRECT
 - DOMAIN-SUFFIX,rawchat.cn,DIRECT
 - DOMAIN-SUFFIX,njznkjyx.top,DIRECT
-- DOMAIN-SUFFIX,kkbox.com,CF_V8_usa.visa.com_443
+- DOMAIN-SUFFIX,kkbox.com,CF_V8_yg8.ygkkk.dpdns.org_443
 - DOMAIN-SUFFIX,anyrouter.top,代理
 - DOMAIN-SUFFIX,rsiai.net,DIRECT
 - DOMAIN-SUFFIX,gemini.google,代理

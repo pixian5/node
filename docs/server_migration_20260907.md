@@ -172,3 +172,32 @@ chmod +x /etc/rc.local
 - TCP 80：WS 直连；TCP 8443：Reality；TCP 2083：XHTTP-CDN；TCP 2053：XHTTP-Reality
 - UDP 443：hy2（sing-box）
 **部署后仍需手动同步**：`pages/c_deploy/sub.yaml`（c 订阅）与 `dy_worker.js`（dy 订阅）中的 Reality `public-key`/`short-id`（如新服务器重新生成了密钥对）。
+
+## WS-TLS vs XHTTP（传输方案选型对比）
+
+**一句话**：WS-TLS = WebSocket 跑在 HTTP/1.1 上（流量升级成 WebSocket 隧道）；XHTTP = 伪装成现代 HTTP/2 (h2) 请求（每一帧都像普通 HTTP 请求）。底层机制不同，适用于不同目标。
+
+| 维度 | WS-TLS（WebSocket） | XHTTP（splithttp） |
+|---|---|---|
+| 底层协议 | WebSocket，**官方明确只走 http/1.1** | 基于 **HTTP/2 (h2)**，新一代传输 |
+| 握手形态 | `Upgrade: websocket` → **101**（特征明显） | 标准 HTTP 请求/响应（**200/204**，无升级痕迹）|
+| 多路复用 | 无，每条 WS 单连接 | **有**，h2 多路复用 + 流控 |
+| 抗 DPI 伪装 | 中等，101 升级是已知特征 | **更强**，流量近似普通 h2 网页请求 |
+| CDN 兼容 | 好（CF/Nginx 均支持） | 好，专为 CDN 设计 |
+| 客户端支持 | 极广（v2rayN/sing-box/mihomo）| 较新，需较新客户端版本 |
+| 性能 | 单路，队头阻塞 | h2 多路，整体更高 |
+| 服务器复用识别 | `path`（http/1.1+path 分流）| `alpn: h2`（或 path）分流 |
+| 延迟 | 一次升级后复用连接 | 每请求 h2 帧，开销略高但多路补偿 |
+
+**要点**：
+- **安全性两者等同**——都靠外层 TLS 加密成数据。HTTP/1.1 vs h2 不影响安全；WS 不是"因为 http/1.1 就更弱"，而是 XHTTP 的**伪装性**更强。
+- WS 的 ALPN 固定 `http/1.1`，官方明确"不要加 h2"（参考 Xray-core 官方教程 trojan+ws+tls 段）。要在 h2 上跑的同类能力是独立的 `h2`/`gRPC` transport，不是 WS。
+- **端口复用靠 ALPN 天然区分，零阉割**：一个 443 入口用 `fallbacks` 按 `path`/`SNI`/`ALPN` 分流到内部不同 transport 的 inbound。各套 transport 都用自身标准 ALPN，不存在为省端口砍功能。这正是单端口多协议复用的意义（参考 XTLS/Xray-examples All-in-one-fallbacks-Nginx）。
+- 本服务器 443 正是这套复用：WS `/videos`(http/1.1+path) 分流 18443；XHTTP `/api/v1`(alpn:h2) 分流 18444，主入口 443 TCP+TLS+alpn[h2,http/1.1]。
+
+**选型建议**：
+- 担心老客户端连不上 → 主用 WS-TLS
+- 看重免流/伪装/抗 DPI → 主用 XHTTP
+- 走 CDN 加速 → 两者皆可，XHTTP 更契合现代 CDN
+
+**教训**：不要把"复用让 WS 走 http/1.1"理解为阉割——WS 本来就是 http/1.1。复用的价值在于零牺牲地把多种 transport 收口到单一外网 443 端口，伪装 + 抗封。

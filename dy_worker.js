@@ -25,7 +25,7 @@ async function handleRequest(request) {
 <button onclick="copyText(this)">
 
 vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@l.sbbz.tech:80?encryption=none&security=none&type=ws&host=v9-y.douyinvod.com&path=/videos#80-WS-直连免流-l
-vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@l.sbbz.tech:443?encryption=none&security=tls&sni=l.sbbz.tech&type=ws&host=l.sbbz.tech&path=/videos#443-WS-TLS-免流-l
+vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@l.sbbz.tech:443?encryption=none&security=tls&sni=v9-y.douyinvod.com&type=ws&fp=chrome&allowInsecure=1&host=v9-y.douyinvod.com&path=/videos#443-WS-TLS-免流-l
 vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@l.sbbz.tech:443?encryption=none&security=tls&sni=v9-y.douyinvod.com&type=xhttp&fp=chrome&path=/api/v1&mode=auto&allowInsecure=1&host=v9-y.douyinvod.com#443-XHTTP-免流-get-v1-l
 hysteria2://41d4f8b3-2a45-4531-a33b-938e2eebb939@l.sbbz.tech:443/?obfs=salamander&obfs-password=sbxbz19890604&sni=l.sbbz.tech#歇斯底里l
 vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@bestcf.top:443?encryption=none&security=tls&sni=lvx2083.sbbz.tech&type=xhttp&path=/videos&host=lvx2083.sbbz.tech&fp=chrome&allowInsecure=1#XHTTP-CDN-l优选域名

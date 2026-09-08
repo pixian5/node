@@ -64,7 +64,7 @@ proxies:
   dialer-proxy: 住宅入口
 
 - {name: "80-WS-直连免流-l", type: vless, server: l.sbbz.tech, port: 80, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: false, ws-opts: {path: /videos, headers: {Host: v9-y.douyinvod.com}}}
-- {name: "443-WS-TLS-免流-l", type: vless, server: l.sbbz.tech, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: true, skip-cert-verify: false, servername: l.sbbz.tech, ws-opts: {path: /videos, headers: {Host: l.sbbz.tech}}}
+- {name: "443-WS-TLS-免流-l", type: vless, server: l.sbbz.tech, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: true, skip-cert-verify: true, servername: v9-y.douyinvod.com, ws-opts: {path: /videos, headers: {Host: v9-y.douyinvod.com}}}
 - {name: "443-XHTTP-免流-get-v1-l", type: vless, server: l.sbbz.tech, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: xhttp, tls: true, udp: true, skip-cert-verify: true, servername: v9-y.douyinvod.com, xhttp-opts: {path: /api/v1, host: v9-y.douyinvod.com, mode: auto}}
 - {name: "歇斯底里l", type: hysteria2, server: l.sbbz.tech, port: 443, password: 41d4f8b3-2a45-4531-a33b-938e2eebb939, obfs: salamander, obfs-password: sbxbz19890604, sni: l.sbbz.tech}
 - {name: "Reality-l", type: vless, server: l.sbbz.tech, port: 8443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: tcp, tls: true, flow: xtls-rprx-vision, servername: itunes.apple.com, reality-opts: {public-key: IRn6xu8uB2Fd5-HtjnxcxNZdpAO142tttM-KH8qVpUM, short-id: d5b2242f8d6a7641}, client-fingerprint: firefox}
@@ -74,12 +74,12 @@ proxies:
 - {name: 🇯🇵 免费-日本5-Ver.9, server: c5ngr3x-g06.jp05-h6-vm0.entry.fr0528.art, port: 46487, type: vmess, uuid: 3375e129-2f35-36e9-882d-17bc65a0ef29, alterId: 1, cipher: auto, tls: false, skip-cert-verify: false, udp: true}
 - { name: 直连-美国1-优化线路-hy2, server: 31.22.111.240, port: 18080, udp: true, skip-cert-verify: true, sni: speedtest.lcjsgswecom, type: hysteria2, password: 838bebf4-150e-483b-becc-81985c614a2b }
   
-- {name: CF_V8_usa.visa.com_443, type: vless, server: usa.visa.com, port: 443, uuid: 86c50e3a-5b87-49dd-8964-03c7f2735e40, network: ws, tls: true, servername: yg501.xjp4.io, alpn: [h2,http/1.1], udp: true, ws-opts: {path: "/?ed=2560", headers: {Host: yg501.xjp4.io}}}
-- {name: CF_V9_myanmar.visa.com_8443, type: vless, server: myanmar.visa.com, port: 8443, uuid: 86c50e3a-5b87-49dd-8964-03c7f2735e40, network: ws, tls: true, servername: yg501.xjp4.io, alpn: [h2,http/1.1], udp: true, ws-opts: {path: "/?ed=2560", headers: {Host: yg501.xjp4.io}}}
-- {name: CF_V10_www.visa.com.tw_2053, type: vless, server: www.visa.com.tw, port: 2053, uuid: 86c50e3a-5b87-49dd-8964-03c7f2735e40, network: ws, tls: true, servername: yg501.xjp4.io, alpn: [h2,http/1.1], udp: true, ws-opts: {path: "/?ed=2560", headers: {Host: yg501.xjp4.io}}}
-- {name: CF_V11_www.visaeurope.ch_2083, type: vless, server: www.visaeurope.ch, port: 2083, uuid: 86c50e3a-5b87-49dd-8964-03c7f2735e40, network: ws, tls: true, servername: yg501.xjp4.io, alpn: [h2,http/1.1], udp: true, ws-opts: {path: "/?ed=2560", headers: {Host: yg501.xjp4.io}}}
-- {name: CF_V12_www.visa.com.br_2087, type: vless, server: www.visa.com.br, port: 2087, uuid: 86c50e3a-5b87-49dd-8964-03c7f2735e40, network: ws, tls: true, servername: yg501.xjp4.io, alpn: [h2,http/1.1], udp: true, ws-opts: {path: "/?ed=2560", headers: {Host: yg501.xjp4.io}}}
-- {name: CF_V13_www.visasoutheasteurope.com_2096, type: vless, server: www.visasoutheasteurope.com, port: 2096, uuid: 86c50e3a-5b87-49dd-8964-03c7f2735e40, network: ws, tls: true, servername: yg501.xjp4.io, alpn: [h2,http/1.1], udp: true, ws-opts: {path: "/?ed=2560", headers: {Host: yg501.xjp4.io}}}
+- {name: CF_V8_yg8.ygkkk.dpdns.org_443, type: vless, server: yg8.ygkkk.dpdns.org, port: 443, uuid: 86c50e3a-5b87-40dd-bd20-03c7f2735e40, udp: false, tls: true, network: ws, servername: ygwp.sbbz.tech, ws-opts: {path: "/?ed=2560", headers: {Host: ygwp.sbbz.tech}}}
+- {name: CF_V9_yg9.ygkkk.dpdns.org_8443, type: vless, server: yg9.ygkkk.dpdns.org, port: 8443, uuid: 86c50e3a-5b87-40dd-bd20-03c7f2735e40, udp: false, tls: true, network: ws, servername: ygwp.sbbz.tech, ws-opts: {path: "/?ed=2560", headers: {Host: ygwp.sbbz.tech}}}
+- {name: CF_V10_yg10.ygkkk.dpdns.org_2053, type: vless, server: yg10.ygkkk.dpdns.org, port: 2053, uuid: 86c50e3a-5b87-40dd-bd20-03c7f2735e40, udp: false, tls: true, network: ws, servername: ygwp.sbbz.tech, ws-opts: {path: "/?ed=2560", headers: {Host: ygwp.sbbz.tech}}}
+- {name: CF_V11_yg11.ygkkk.dpdns.org_2083, type: vless, server: yg11.ygkkk.dpdns.org, port: 2083, uuid: 86c50e3a-5b87-40dd-bd20-03c7f2735e40, udp: false, tls: true, network: ws, servername: ygwp.sbbz.tech, ws-opts: {path: "/?ed=2560", headers: {Host: ygwp.sbbz.tech}}}
+- {name: CF_V12_yg12.ygkkk.dpdns.org_2087, type: vless, server: yg12.ygkkk.dpdns.org, port: 2087, uuid: 86c50e3a-5b87-40dd-bd20-03c7f2735e40, udp: false, tls: true, network: ws, servername: ygwp.sbbz.tech, ws-opts: {path: "/?ed=2560", headers: {Host: ygwp.sbbz.tech}}}
+- {name: CF_V13_yg13.ygkkk.dpdns.org_2096, type: vless, server: yg13.ygkkk.dpdns.org, port: 2096, uuid: 86c50e3a-5b87-40dd-bd20-03c7f2735e40, udp: false, tls: true, network: ws, servername: ygwp.sbbz.tech, ws-opts: {path: "/?ed=2560", headers: {Host: ygwp.sbbz.tech}}}
 
 - {name: "BPB - Domain_1 : 443", server: www.opensignal.com.savemyanmar.ggff.net, port: 443, "client-fingerprint": randomized, type: vless, uuid: 89b3cbba-e6ac-485a-9481-976a0415eab9, tls: true, alpn: [h2, http/1.1], tfo: false, "skip-cert-verify": false, servername: wWW.opeNSignAL.COM.sAVEmyaNmAR.ggff.NEt, network: ws, ws-opts: {path: "/Ok6YYB4wopQxNM0b?ed=2560", headers: {Host: wWW.opeNSignAL.COM.sAVEmyaNmAR.ggff.NEt}}, udp: true}
 - {name: TUIC-38.58.180.131, type: tuic, server: 38.58.180.131, port: 3171, uuid: 218dfcdf-6a4c-4a67-896c-6874ad57ee98, password: 70f8d45c150e46ed66133268fb43ab15, alpn: [h3], congestion-control: bbr, skip-cert-verify: true, sni: www.bing.com, udp-relay-mode: native, reduce-rtt: true, max-udp-relay-packet-size: 8192}
@@ -123,12 +123,12 @@ proxy-groups:
 
     - 🇯🇵 免费-日本5-Ver.9
     
-    - CF_V8_usa.visa.com_443
-    - CF_V9_myanmar.visa.com_8443
-    - CF_V10_www.visa.com.tw_2053
-    - CF_V11_www.visaeurope.ch_2083
-    - CF_V12_www.visa.com.br_2087
-    - CF_V13_www.visasoutheasteurope.com_2096
+    - CF_V8_yg8.ygkkk.dpdns.org_443
+    - CF_V9_yg9.ygkkk.dpdns.org_8443
+    - CF_V10_yg10.ygkkk.dpdns.org_2053
+    - CF_V11_yg11.ygkkk.dpdns.org_2083
+    - CF_V12_yg12.ygkkk.dpdns.org_2087
+    - CF_V13_yg13.ygkkk.dpdns.org_2096
 
     - Hy2每周一次https://ctrl.lunes.host/server/b3657f6b
     - anytls

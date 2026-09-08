@@ -83,29 +83,10 @@ proxies:
 
 - {name: "BPB - Domain_1 : 443", server: www.opensignal.com.savemyanmar.ggff.net, port: 443, "client-fingerprint": randomized, type: vless, uuid: 89b3cbba-e6ac-485a-9481-976a0415eab9, tls: true, alpn: [h2, http/1.1], tfo: false, "skip-cert-verify": false, servername: wWW.opeNSignAL.COM.sAVEmyaNmAR.ggff.NEt, network: ws, ws-opts: {path: "/Ok6YYB4wopQxNM0b?ed=2560", headers: {Host: wWW.opeNSignAL.COM.sAVEmyaNmAR.ggff.NEt}}, udp: true}
 - {name: TUIC-38.58.180.131, type: tuic, server: 38.58.180.131, port: 3171, uuid: 218dfcdf-6a4c-4a67-896c-6874ad57ee98, password: 70f8d45c150e46ed66133268fb43ab15, alpn: [h3], congestion-control: bbr, skip-cert-verify: true, sni: www.bing.com, udp-relay-mode: native, reduce-rtt: true, max-udp-relay-packet-size: 8192}
-- name: anytls
-  type: anytls
-  server: wi.xbz.email
-  port: 10364
-  password: grdxjpsqj
-  sni: www.microsoft.com
-  skip-cert-verify: true
 
-- name: "AnyTLS-lunes-2339"
-  type: anytls
-  server: node1.lunes.host
-  port: 2339
-  password: grdxjpsqj
-  sni: www.microsoft.com
-  skip-cert-verify: true
-
-- name: "SOCKS Proxy"
-  type: socks5
-  server: 127.0.0.1        # 代理服务器地址
-  port: 33000               # 代理服务器端口
-  # username: ""             # 如果需要用户名认证，请填入
-  # password: ""             # 如果需要密码认证，请填入
-  udp: true
+- {name: anytls, type: anytls, server: wi.xbz.email, port: 10364, password: grdxjpsqj, sni: www.microsoft.com, skip-cert-verify: true}
+- {name: "AnyTLS-lunes-2339", type: anytls, server: node1.lunes.host, port: 2339, password: grdxjpsqj, sni: www.microsoft.com, skip-cert-verify: true}
+- {name: "SOCKS Proxy", type: socks5, server: 127.0.0.1, port: 33000, udp: true}
 - { name: Hy2每周一次https://ctrl.lunes.host/server/b3657f6b, type: hysteria2, server: 38.58.180.132, port: 3089, password: ieshare2025, sni: www.bing.com, alpn: [h3], skip-cert-verify: true }
 proxy-groups:
 # 代理组 - 选择常用节点
@@ -172,6 +153,7 @@ proxy-groups:
 
 rules:
 # 局域网、回环及路由器域名优先直连
+- IP-CIDR,148.100.0.0/16,DIRECT
 - DOMAIN-SUFFIX,lan,DIRECT
 - DOMAIN-SUFFIX,acl4.ssr,DIRECT
 - DOMAIN-SUFFIX,ip6-localhost,DIRECT

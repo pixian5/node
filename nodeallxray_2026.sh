@@ -4,7 +4,7 @@ cat > /root/ultimate_allxray_2026.sh << 'ULTIMATE_EOF'
 # nodeallxray_2026.sh — xray 承载全部 TCP 节点，sing-box 只留 Hysteria2(UDP)
 # 基于 node6.sh 重构。把 Reality(8443)、WS-TLS(443/TCP) 从 sing-box 迁入 xray。
 # sing-box 精简为仅承载 hy2(443/UDP)。
-# 版本：0.0.6
+# 版本：0.0.7
 # =====================================================================
 
 # ================= 配置变量区 =================
@@ -37,7 +37,7 @@ GTS_EAB_KID="878a7b1b4d9971e19f43502f08c00605"
 GTS_EAB_HMAC="BgILC_5utbdBOM4gFi_0bPbZnzCqwA3P0G7Ka-G1sLXyHWMDrE5sp_es1bd_jXcZET8QXd75cBEqZS9xf4CGcZg"
 
 echo "================================================================="
-echo "      ✨ allxray 0.0.6：xray 承载全部 TCP，sing-box 只留 hy2"
+echo "      ✨ allxray 0.0.7：xray 承载全部 TCP，sing-box 只留 hy2"
 echo "      ✨ 0. 基础环境准备 (apt update + 必要工具)"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
@@ -178,7 +178,7 @@ cat > "$XBZ_CONF" << X_JSON
     "log": { "loglevel": "info" },
     "inbounds": [
         {"port": 8443, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID", "flow": "xtls-rprx-vision"}], "decryption": "none"}, "streamSettings": {"network": "tcp", "security": "reality", "realitySettings": {"show": false, "dest": "$DEST_DOMAIN:443", "xver": 0, "serverNames": ["$DEST_DOMAIN"], "privateKey": "$PRIVATE_KEY", "shortIds": ["$SHORT_ID"]}}},
-        {"port": 443, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none", "fallbacks": [{"alpn": "h2", "dest": 18444}, {"path": "/videos", "dest": 18443}]}, "streamSettings": {"network": "tcp", "security": "tls", "tlsSettings": {"certificates": [{"certificateFile": "$CERT_DIR/server.crt", "keyFile": "$CERT_DIR/server.key"}], "serverName": "$ML_HOST", "alpn": ["h2", "http/1.1"]}}},
+        {"port": 443, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none", "fallbacks": [{"alpn": "h2", "dest": 18444}, {"path": "/videos", "dest": 18443}]}, "streamSettings": {"network": "tcp", "security": "tls", "tlsSettings": {"certificates": [{"certificateFile": "$CERT_DIR/server.crt", "keyFile": "$CERT_DIR/server.key"}], "alpn": ["h2", "http/1.1"]}}},
         {"port": 18443, "listen": "127.0.0.1", "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none"}, "streamSettings": {"network": "ws", "security": "none", "wsSettings": {"path": "/videos"}}},
         {"port": 18444, "listen": "127.0.0.1", "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none"}, "streamSettings": {"network": "xhttp", "security": "none", "xhttpSettings": {"path": "/api/v1", "mode": "auto"}}},
         {"port": 80, "protocol": "vless", "settings": {"clients": [{"id": "$MY_GUID"}], "decryption": "none"}, "streamSettings": {"network": "ws", "wsSettings": {"path": "/videos", "headers": {"Host": "$ML_HOST"}}}},

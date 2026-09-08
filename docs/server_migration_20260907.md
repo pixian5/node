@@ -211,3 +211,34 @@ chmod +x /etc/rc.local
 - 走 CDN 加速 → 两者皆可，XHTTP 更契合现代 CDN
 
 **教训**：不要把"复用让 WS 走 http/1.1"理解为阉割——WS 本来就是 http/1.1。复用的价值在于零牺牲地把多种 transport 收口到单一外网 443 端口，伪装 + 抗封。
+
+## 9. 免流 SNI 握手失败：服务端 serverName 不能设免流域名（重要）
+
+**现象**：订阅里 443 的免流节点（`servername: v9-y.douyinvod.com`，skip-cert-verify）连不上——TLS 握手阶段直接挂起到超时；而服务端日志**完全没有该握手的记录**（被 TLS 层丢弃）。非免流的 `SNI=l.sbbz.tech` 却握手正常。
+
+**根因**：xray 的 `tlsSettings` 里把 `serverName` 设成了免流域名 `v9-y.douyinvod.com`，而服务器证书 SAN 只有 `*.sbbz.tech`。客户端用免流 SNI 握手指到**任何一张匹配证书**时，xray 直接放弃握手（无响应、无日志）。
+
+**解决**：删除 443 inbound `tlsSettings` 中的 `serverName`（置空/去掉该字段）。此后 xray 对任意 SNI（含 v9-y.douyinvod.com）都下发默认证书完成 TLS 握手，再由 fallback 按 path/ALPN 分流。客户端 `skip-cert-verify: true` 即可正常免流。
+已同步到部署脚本 `nodeallxray_2026.sh`（0.0.7）：443 inbound 不再写 `serverName`。
+
+**关键区分**：
+- 客户端侧 servername/Host = 免流域名（v9-y.douyinvod.com）→ 保持，这是免流伪装
+- 服务端侧 tlsSettings.serverName → **必须删除或填证书覆盖的域名**，不能填免流域名
+
+## 10. 节点实测结论（2026-09-08，TUN 已关直连）
+
+**工具**：`nodetest.py`（TCP+TLS 握手计时）+ mihomo 加载真实 `sub.yaml` 节点 curl 实测。
+
+| 节点 | 协议/端口 | 结果 |
+|---|---|---|
+| 80-WS-直连免流 | ws:80 无TLS | ✅ 稳定（0.76~1.5s）|
+| 443-WS-TLS-免流 | ws:443 | ✅ 修复后通（SNI v9-y）|
+| 443-XHTTP-免流 | xhttp:443 | ✅ 修复后通（SNI v9-y）|
+| 歇斯底里 | hysteria2:443/udp | ✅ 最稳（0.3~1.2s，QUIC 抗丢包）|
+| Reality | vless+reality:8443 | ✅（openssl 验证被防探测转发到 Apple 真证书）|
+| XHTTP-Reality | xhttp+reality:2053 | ✅ |
+| XHTTP-CDN | xhttp:443@bestcf.top | ✅ |
+
+**链路瓶颈**：本机→服务器丢包率 **80%**（ping 10 包仅回 2，RTT≈247ms 跨太平洋 Marist）。所有 TLS 类节点首连成功率低（40%~66%）、抖动大，均为丢包导致 TCP 握手重传，**不是配置问题**。hy2（UDP/QUIC）天然抗丢包所以表现最好。
+
+**优化方向（阶段三）**：丢包率高时 TFO/backlog 等内核参数收益有限；真正有效的是链路本身（换线路/上 CDN 加速 XHTTP-CDN 节点）。

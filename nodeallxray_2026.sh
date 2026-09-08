@@ -4,7 +4,7 @@ cat > /root/ultimate_allxray_2026.sh << 'ULTIMATE_EOF'
 # nodeallxray_2026.sh — xray 承载全部 TCP 节点，sing-box 只留 Hysteria2(UDP)
 # 基于 node6.sh 重构。把 Reality(8443)、WS-TLS(443/TCP) 从 sing-box 迁入 xray。
 # sing-box 精简为仅承载 hy2(443/UDP)。
-# 版本：0.0.4
+# 版本：0.0.5
 # =====================================================================
 
 # ================= 配置变量区 =================
@@ -37,7 +37,7 @@ GTS_EAB_KID="878a7b1b4d9971e19f43502f08c00605"
 GTS_EAB_HMAC="BgILC_5utbdBOM4gFi_0bPbZnzCqwA3P0G7Ka-G1sLXyHWMDrE5sp_es1bd_jXcZET8QXd75cBEqZS9xf4CGcZg"
 
 echo "================================================================="
-echo "      ✨ allxray 0.0.4：xray 承载全部 TCP，sing-box 只留 hy2"
+echo "      ✨ allxray 0.0.5：xray 承载全部 TCP，sing-box 只留 hy2"
 echo "      ✨ 0. 基础环境准备 (apt update + 必要工具)"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
@@ -49,6 +49,20 @@ bootstrap_cf_deps() {
   if [ "$miss" -eq 1 ]; then apt-get install -y curl jq ca-certificates; fi
 }
 bootstrap_cf_deps
+echo "      ✨ 1.5 开启 BBR 拥塞控制 (fq + bbr)"
+modprobe tcp_bbr 2>/dev/null || true
+# 持久化到 sysctl.conf，自动去重
+for kv in "net.core.default_qdisc=fq" "net.ipv4.tcp_congestion_control=bbr"; do
+    key="${kv%%=*}"
+    if ! grep -q "^${key}" /etc/sysctl.conf; then
+        echo "$kv" >> /etc/sysctl.conf
+    fi
+done
+# 清理可能残留的重复 bbr 行
+awk '!seen[$0]++ || !/^net.ipv4.tcp_congestion_control=bbr$/' /etc/sysctl.conf > /tmp/sysctl.conf.new
+mv /tmp/sysctl.conf.new /etc/sysctl.conf
+sysctl -p >/dev/null 2>&1 || true
+echo "      ✅ BBR: $(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null) / qdisc $(sysctl -n net.core.default_qdisc 2>/dev/null)"
 systemctl stop bz xbz 2>/dev/null
 command -v fuser >/dev/null 2>&1 && fuser -k 443/udp 443/tcp 80/tcp 8443/tcp 2083/tcp 2053/tcp 2>/dev/null
 echo "开通防火墙端口"

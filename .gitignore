@@ -1,3 +1,8 @@
 .DS_Store
 2026-03-20-02-48-19-electerm-all-data.json
 cache.db
+
+# 凭证文件：含 Cloudflare API Key / Token，仓库是公开的，绝不能提交
+.env
+.env.*
+!.env.example

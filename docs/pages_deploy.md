@@ -121,8 +121,9 @@ curl -X PATCH "https://api.cloudflare.com/client/v4/accounts/e16771787e0f6f85e89
 
 ## 相关：另一个订阅源 dy.sbbz.tech 不走 Pages
 
-`dy.sbbz.tech` 是 **Cloudflare Worker**（名 `dy`），节点**硬编码**在 `dy_worker.js` 里，更新方式是：
-```bash
-npx wrangler deploy dy_worker.js --name dy --compatibility-date <日期>
-```
-改节点时**两个源必须同步改**，否则一边新一边旧（见 `docs/server_migration_20260907.md` 第 7 条）。
+`dy.sbbz.tech` 是 **Cloudflare Worker**（名 `dy`），节点**硬编码**在 `dy_worker.js` 里。
+现在不用手工改了——用 `sync_dy_worker.py` 从 `sub.yaml` 自动生成并部署，见 **`docs/dy_worker_sync.md`**（含环境变量清单与 `.env` 用法）。
+
+改节点时**两个源必须同步改**，否则一边新一边旧（见 `docs/server_migration_20260907.md` 第 7 条）：
+1. 改 `pages/c_deploy/sub.yaml` → `git push`（Pages 自动部署）
+2. 跑一次 `python3 sync_dy_worker.py`（Worker 自动部署）

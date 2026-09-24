@@ -6,7 +6,6 @@ dns:
   ipv6: false
   # 保持监听全部网卡；Clash mihomo 开启局域网共享后，局域网客户端可使用此 DNS 服务。
   listen: 0.0.0.0:1053
-
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
@@ -19,29 +18,23 @@ dns:
     - '+.msftncsi.com'
     - captive.apple.com
     - connectivitycheck.gstatic.com
-
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
-
   nameserver-policy:
     "geosite:cn":
       - https://dns.alidns.com/dns-query
       - https://doh.pub/dns-query
     "geosite:private": system
-
   nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
-
   fallback:
     - tls://one.one.one.one:853
     - tls://dns.google:853
-
   proxy-server-nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
-
   fallback-filter:
     geoip: true
     geoip-code: CN
@@ -55,21 +48,30 @@ dns:
       - '+.facebook.com'
       - '+.instagram.com'
 proxies:
-- name: "住宅1"
-  type: socks5
-  server: 68.64.133.101
-  port: 8943
-  username: M5m8j9p6m1o0
-  password: G5u4S8I2U5d5
-  dialer-proxy: 住宅入口
+- { name: "住宅1", type: socks5, server: 96.62.46.16, port: 9803, username: "b8e7m5M2W1d1", password: "c6i3F2A2W0p1", udp: true ,dialer-proxy: 住宅入口}
+- {name: 台湾, server: 35.221.217.120, port: 443, type: vless, uuid: 22a0b0bd-1cd0-43fa-a7c3-73b24eae44e2, tls: true, tfo: false, skip-cert-verify: false, reality-opts: {public-key: PLslPQOBA3bfWO5hXLv7jioCTuNR8vCxa_axi0dC7C0, short-id: "32f66f37df3f58d2" }, servername: www.cloudflare.com, client-fingerprint: chrome, network: tcp}
+- {name: 🇯🇵 免费-日本1-Ver.7, server: d5eae6w-g06.jp01-nn-vm0.entry.fr0528.art, port: 21586, type: vmess, uuid: 3959df8c-175b-37ad-963f-99370c2b8b57, alterId: 1, cipher: auto, tls: true, skip-cert-verify: false, udp: true,dialer-proxy: 住宅入口}
+  
+- {name: "80-WS-直连免流-aws", type: vless, server: aws.sbbz.tech, port: 80, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: false, ws-opts: {path: /videos, headers: {Host: v9-y.douyinvod.com}}}
+- {name: "443-WS-TLS-免流-aws", type: vless, server: aws.sbbz.tech, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: true, skip-cert-verify: true, servername: v9-y.douyinvod.com, ws-opts: {path: /videos, headers: {Host: v9-y.douyinvod.com}}}
+- {name: "歇斯底里aws", type: hysteria2, server: aws.sbbz.tech, port: 443, password: 41d4f8b3-2a45-4531-a33b-938e2eebb939, obfs: salamander, obfs-password: sbxbz19890604, sni: aws.sbbz.tech}
+- {name: "XHTTP-CDN-aws优选域名", type: vless, server: cf.090227.xyz, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: xhttp, tls: true, skip-cert-verify: false, servername: awsvx2083.sbbz.tech, client-fingerprint: firefox, xhttp-opts: {path: /videos, host: awsvx2083.sbbz.tech}}
+- {name: "XHTTP-Reality-aws", type: vless, server: aws.sbbz.tech, port: 2053, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: xhttp, tls: true, servername: itunes.apple.com, reality-opts: {public-key: MvldrbhFkWi5t-KZkW82-60qR8T5tId8QVfSW60iFlk, short-id: 7d21ec15eb6a8f21}, client-fingerprint: firefox, xhttp-opts: {path: /videos}}
+- {name: "Reality-aws", type: vless, server: aws.sbbz.tech, port: 8443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: tcp, tls: true, flow: xtls-rprx-vision, servername: itunes.apple.com, reality-opts: {public-key: MvldrbhFkWi5t-KZkW82-60qR8T5tId8QVfSW60iFlk, short-id: 7d21ec15eb6a8f21}, client-fingerprint: firefox}
 
-- {name: "80-WS-直连免流-l", type: vless, server: l.sbbz.tech, port: 80, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: false, ws-opts: {path: /videos, headers: {Host: v9-y.douyinvod.com}}}
-- {name: "443-WS-TLS-免流-l", type: vless, server: l.sbbz.tech, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: ws, tls: true, skip-cert-verify: true, servername: v9-y.douyinvod.com, ws-opts: {path: /videos, headers: {Host: v9-y.douyinvod.com}}}
-- {name: "443-XHTTP-免流-get-v1-l", type: vless, server: l.sbbz.tech, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: xhttp, tls: true, udp: true, skip-cert-verify: true, servername: v9-y.douyinvod.com, xhttp-opts: {path: /api/v1, host: v9-y.douyinvod.com, mode: auto}}
-- {name: "歇斯底里l", type: hysteria2, server: l.sbbz.tech, port: 443, password: 41d4f8b3-2a45-4531-a33b-938e2eebb939, obfs: salamander, obfs-password: sbxbz19890604, sni: l.sbbz.tech}
-- {name: "Reality-l", type: vless, server: l.sbbz.tech, port: 8443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: tcp, tls: true, flow: xtls-rprx-vision, servername: itunes.apple.com, reality-opts: {public-key: IRn6xu8uB2Fd5-HtjnxcxNZdpAO142tttM-KH8qVpUM, short-id: d5b2242f8d6a7641}, client-fingerprint: firefox}
-- {name: "XHTTP-Reality-l", type: vless, server: l.sbbz.tech, port: 2053, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: xhttp, tls: true, udp: true, servername: itunes.apple.com, client-fingerprint: firefox, reality-opts: {public-key: IRn6xu8uB2Fd5-HtjnxcxNZdpAO142tttM-KH8qVpUM, short-id: d5b2242f8d6a7641}, xhttp-opts: {path: /videos, mode: auto}}
-- {name: "XHTTP-CDN-l优选域名", type: vless, server: bestcf.top, port: 443, uuid: 41d4f8b3-2a45-4531-a33b-938e2eebb939, network: xhttp, tls: true, udp: true, servername: lvx2083.sbbz.tech, skip-cert-verify: true, xhttp-opts: {path: /videos, host: lvx2083.sbbz.tech, mode: auto}}
+
+- {name: "😈---氪金分割线---｜0.10元/G｜Reality｜", type: vless, server: uk-001.xiaoxiaobujidao.xyz, port: 19443, flow: xtls-rprx-vision, udp: true, uuid: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, alterId: 0, cipher: auto, network: tcp, ws-opts: {path: /bujidao, headers: {Host: uk-001.xiaoxiaobujidao.xyz}}, ws-path: /bujidao, ws-headers: {Host: uk-001.xiaoxiaobujidao.xyz}, tls: true, servername: dash.cloudflare.com, client-fingerprint: firefox, reality-opts: {public-key: vMHW4_fx7bd_4bFZN9ecx58xSjv6SLg0wRYrdI62yUo, short-id: ''}}
+- {name: "😈英格兰002｜0.09元/G｜hy2｜", type: hysteria2, server: uk-002.xiaoxiaobujidao.xyz, port: 19443, up: 100, down: 200, password: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, sni: uk-002.xiaoxiaobujidao.xyz, skip-cert-verify: false}
+- {name: "😈英格兰003｜0.08元/G｜XHTTP｜", type: vless, server: uk-003.xiaoxiaobujidao.xyz, port: 443, udp: true, uuid: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, network: xhttp, tls: true, servername: uk-003.xiaoxiaobujidao.xyz, alpn: [h2], xhttp-opts: {path: /bujidao, host: uk-003.xiaoxiaobujidao.xyz, mode: packet-up}}
+- {name: "😈英格兰003｜0.08元/G｜XHTTP H3｜", type: vless, server: uk-003.xiaoxiaobujidao.xyz, port: 443, udp: true, uuid: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, network: xhttp, tls: true, servername: uk-003.xiaoxiaobujidao.xyz, alpn: [h3], xhttp-opts: {path: /bujidao, host: uk-003.xiaoxiaobujidao.xyz, mode: packet-up}}
+- {name: "💛加拿大001｜0.07元/G｜XHTTP｜", type: vless, server: ca-001.xiaoxiaobujidao.xyz, port: 443, udp: true, uuid: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, network: xhttp, tls: true, servername: ca-001.xiaoxiaobujidao.xyz, alpn: [h2], xhttp-opts: {path: /bujidao, host: ca-001.xiaoxiaobujidao.xyz, mode: packet-up}}
+- {name: "💛加拿大001｜0.07元/G｜XHTTP H3｜", type: vless, server: ca-001.xiaoxiaobujidao.xyz, port: 443, udp: true, uuid: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, network: xhttp, tls: true, servername: ca-001.xiaoxiaobujidao.xyz, alpn: [h3], xhttp-opts: {path: /bujidao, host: ca-001.xiaoxiaobujidao.xyz, mode: packet-up}}
+- {name: "💛加拿大002｜0.06元/G｜hy2｜", type: hysteria2, server: ca-002.xiaoxiaobujidao.xyz, port: 8443, up: 100, down: 200, password: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, sni: ca-002.xiaoxiaobujidao.xyz, skip-cert-verify: false}
+- {name: "💛加拿大003｜0.05元/G｜Reality｜", type: vless, server: ca-003.xiaoxiaobujidao.xyz, port: 8443, flow: xtls-rprx-vision, udp: true, uuid: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, alterId: 0, cipher: auto, network: tcp, ws-opts: {path: /bubudao, headers: {Host: ca-003.xiaoxiaobujidao.xyz}}, ws-path: /bubudao, ws-headers: {Host: ca-003.xiaoxiaobujidao.xyz}, tls: true, servername: dash.cloudflare.com, client-fingerprint: firefox, reality-opts: {public-key: _zJXh1QBg7D0lcPUFPrxPh7Zfqu1wK0sX8W0AQNIRg0, short-id: ''}}
+- {name: "💚法兰西002-IPv6｜0.04元/G｜hy2｜", type: hysteria2, server: fr-002.xiaoxiaobujidao.xyz, port: 443, up: 100, down: 200, password: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, sni: fr-002.xiaoxiaobujidao.xyz, skip-cert-verify: false}
+- {name: "💚法兰西001-IPv6｜0.03元/G｜Reality｜", type: vless, server: fr-001.xiaoxiaobujidao.xyz, port: 443, flow: xtls-rprx-vision, udp: true, uuid: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, alterId: 0, cipher: auto, network: tcp, ws-opts: {path: /bujidao, headers: {Host: fr-001.xiaoxiaobujidao.xyz}}, ws-path: /bujidao, ws-headers: {Host: fr-001.xiaoxiaobujidao.xyz}, tls: true, servername: dash.cloudflare.com, client-fingerprint: firefox, reality-opts: {public-key: vMHW4_fx7bd_4bFZN9ecx58xSjv6SLg0wRYrdI62yUo, short-id: ''}}
+- {name: "🖤东京京X07｜0.02元/G｜Reality｜", type: vless, server: tk-X07.xiaoxiaobujidao.xyz, port: 12443, flow: xtls-rprx-vision, udp: true, uuid: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, alterId: 0, cipher: auto, network: tcp, ws-opts: {path: /bubudao, headers: {Host: tk-X07.xiaoxiaobujidao.xyz}}, ws-path: /bubudao, ws-headers: {Host: tk-X07.xiaoxiaobujidao.xyz}, tls: true, servername: dash.cloudflare.com, client-fingerprint: firefox, reality-opts: {public-key: _zJXh1QBg7D0lcPUFPrxPh7Zfqu1wK0sX8W0AQNIRg0, short-id: ''}}
+- {name: "🖤东京京X06｜0.01元/G｜Reality｜", type: vless, server: tk-X06.xiaoxiaobujidao.xyz, port: 18443, flow: xtls-rprx-vision, udp: true, uuid: 8b60d570-cbce-4791-b3e8-bcb80dd12ac0, alterId: 0, cipher: auto, network: tcp, ws-opts: {path: /bubu, headers: {Host: tk-X06.xiaoxiaobujidao.xyz}}, ws-path: /bubu, ws-headers: {Host: tk-X06.xiaoxiaobujidao.xyz}, tls: true, servername: dash.cloudflare.com, client-fingerprint: firefox, reality-opts: {public-key: _zJXh1QBg7D0lcPUFPrxPh7Zfqu1wK0sX8W0AQNIRg0, short-id: ''}}
 
 - {name: 🇯🇵 免费-日本5-Ver.9, server: c5ngr3x-g06.jp05-h6-vm0.entry.fr0528.art, port: 46487, type: vmess, uuid: 3375e129-2f35-36e9-882d-17bc65a0ef29, alterId: 1, cipher: auto, tls: false, skip-cert-verify: false, udp: true}
 - { name: 直连-美国1-优化线路-hy2, server: 31.22.111.240, port: 18080, udp: true, skip-cert-verify: true, sni: speedtest.lcjsgswecom, type: hysteria2, password: 838bebf4-150e-483b-becc-81985c614a2b }
@@ -83,7 +85,6 @@ proxies:
 
 - {name: "BPB - Domain_1 : 443", server: www.opensignal.com.savemyanmar.ggff.net, port: 443, "client-fingerprint": randomized, type: vless, uuid: 89b3cbba-e6ac-485a-9481-976a0415eab9, tls: true, alpn: [h2, http/1.1], tfo: false, "skip-cert-verify": false, servername: wWW.opeNSignAL.COM.sAVEmyaNmAR.ggff.NEt, network: ws, ws-opts: {path: "/Ok6YYB4wopQxNM0b?ed=2560", headers: {Host: wWW.opeNSignAL.COM.sAVEmyaNmAR.ggff.NEt}}, udp: true}
 - {name: TUIC-38.58.180.131, type: tuic, server: 38.58.180.131, port: 3171, uuid: 218dfcdf-6a4c-4a67-896c-6874ad57ee98, password: 70f8d45c150e46ed66133268fb43ab15, alpn: [h3], congestion-control: bbr, skip-cert-verify: true, sni: www.bing.com, udp-relay-mode: native, reduce-rtt: true, max-udp-relay-packet-size: 8192}
-
 - {name: anytls, type: anytls, server: wi.xbz.email, port: 10364, password: grdxjpsqj, sni: www.microsoft.com, skip-cert-verify: true}
 - {name: "AnyTLS-lunes-2339", type: anytls, server: node1.lunes.host, port: 2339, password: grdxjpsqj, sni: www.microsoft.com, skip-cert-verify: true}
 - {name: "SOCKS Proxy", type: socks5, server: 127.0.0.1, port: 33000, udp: true}
@@ -93,14 +94,30 @@ proxy-groups:
 - name: 代理
   type: select
   proxies:
+    - 住宅出口
+    - 台湾
+    
+    - 80-WS-直连免流-aws
+    - 443-WS-TLS-免流-aws
+    - 歇斯底里aws
+    - XHTTP-CDN-aws优选域名
+    - XHTTP-Reality-aws
+    - Reality-aws
 
-    - 80-WS-直连免流-l
-    - 443-WS-TLS-免流-l
-    - 443-XHTTP-免流-get-v1-l
-    - 歇斯底里l
-    - Reality-l
-    - XHTTP-Reality-l
-    - XHTTP-CDN-l优选域名
+    - 🇯🇵 免费-日本1-Ver.7
+
+    - 😈---氪金分割线---｜0.10元/G｜Reality｜
+    - 😈英格兰002｜0.09元/G｜hy2｜
+    - 😈英格兰003｜0.08元/G｜XHTTP｜
+    - 😈英格兰003｜0.08元/G｜XHTTP H3｜
+    - 💛加拿大001｜0.07元/G｜XHTTP｜
+    - 💛加拿大001｜0.07元/G｜XHTTP H3｜
+    - 💛加拿大002｜0.06元/G｜hy2｜
+    - 💛加拿大003｜0.05元/G｜Reality｜
+    - 💚法兰西002-IPv6｜0.04元/G｜hy2｜
+    - 💚法兰西001-IPv6｜0.03元/G｜Reality｜
+    - 🖤东京京X07｜0.02元/G｜Reality｜
+    - 🖤东京京X06｜0.01元/G｜Reality｜
 
     - 🇯🇵 免费-日本5-Ver.9
     
@@ -120,7 +137,8 @@ proxy-groups:
 - name: 住宅入口
   type: select
   proxies:
-    - 代理
+    - 台湾
+    - 🖤东京京X06｜0.01元/G｜Reality｜
 - name: 住宅出口
   type: select
   proxies:
@@ -153,8 +171,9 @@ proxy-groups:
 
 rules:
 # 局域网、回环及路由器域名优先直连
-- IP-CIDR,148.100.0.0/16,DIRECT
 - DOMAIN-SUFFIX,lan,DIRECT
+#- DOMAIN-SUFFIX,lxai.pro,DIRECT
+- IP-CIDR,148.100.112.30/32,DIRECT
 - DOMAIN-SUFFIX,acl4.ssr,DIRECT
 - DOMAIN-SUFFIX,ip6-localhost,DIRECT
 - DOMAIN-SUFFIX,ip6-loopback,DIRECT
@@ -197,6 +216,7 @@ rules:
 - DOMAIN,dl.google.com,DIRECT
 - DOMAIN-SUFFIX,baidustatic.com,DIRECT
 # 自定义分流规则
+- DOMAIN-SUFFIX,agentrouter.org,💛加拿大003｜0.05元/G｜Reality｜
 - DOMAIN-SUFFIX,doubao.com,DIRECT
 - DOMAIN-SUFFIX,onecdn.static.microsoft,DIRECT
 - DOMAIN-SUFFIX,sbbz.tech,DIRECT

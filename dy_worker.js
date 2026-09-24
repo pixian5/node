@@ -23,14 +23,12 @@ async function handleRequest(request) {
   </head>
     <body style="font-family: sans-serif; white-space: pre-line;">
 <button onclick="copyText(this)">
-
-vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@aws.sbbz.tech:80?encryption=none&security=none&type=ws&host=v9-y.douyinvod.com&path=/videos#80-WS-直连免流-aws
-vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@aws.sbbz.tech:443?encryption=none&security=tls&sni=v9-y.douyinvod.com&type=ws&fp=chrome&allowInsecure=1&host=v9-y.douyinvod.com&path=/videos#443-WS-TLS-免流-aws
+vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@aws.sbbz.tech:80?encryption=none&security=none&type=ws&path=/videos&host=v9-y.douyinvod.com#80-WS-直连免流-aws
+vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@aws.sbbz.tech:443?encryption=none&security=tls&sni=v9-y.douyinvod.com&fp=chrome&allowInsecure=1&type=ws&path=/videos&host=v9-y.douyinvod.com#443-WS-TLS-免流-aws
 hysteria2://41d4f8b3-2a45-4531-a33b-938e2eebb939@aws.sbbz.tech:443/?obfs=salamander&obfs-password=sbxbz19890604&sni=aws.sbbz.tech#歇斯底里aws
-vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@cf.090227.xyz:443?encryption=none&security=tls&sni=awsvx2083.sbbz.tech&type=xhttp&path=/videos&host=awsvx2083.sbbz.tech&fp=firefox#XHTTP-CDN-aws优选域名
-vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@aws.sbbz.tech:2053?security=reality&pbk=MvldrbhFkWi5t-KZkW82-60qR8T5tId8QVfSW60iFlk&sid=7d21ec15eb6a8f21&fp=firefox&type=xhttp&path=/videos&sni=itunes.apple.com#XHTTP-Reality-aws
-vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@aws.sbbz.tech:8443?security=reality&pbk=MvldrbhFkWi5t-KZkW82-60qR8T5tId8QVfSW60iFlk&sid=7d21ec15eb6a8f21&fp=firefox&type=tcp&flow=xtls-rprx-vision&sni=itunes.apple.com#Reality-aws
-
+vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@cf.090227.xyz:443?encryption=none&security=tls&sni=awsvx2083.sbbz.tech&fp=firefox&type=xhttp&path=/videos&host=awsvx2083.sbbz.tech#XHTTP-CDN-aws优选域名
+vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@aws.sbbz.tech:2053?encryption=none&security=reality&pbk=MvldrbhFkWi5t-KZkW82-60qR8T5tId8QVfSW60iFlk&sid=7d21ec15eb6a8f21&sni=itunes.apple.com&fp=firefox&type=xhttp&path=/videos#XHTTP-Reality-aws
+vless://41d4f8b3-2a45-4531-a33b-938e2eebb939@aws.sbbz.tech:8443?encryption=none&security=reality&pbk=MvldrbhFkWi5t-KZkW82-60qR8T5tId8QVfSW60iFlk&sid=7d21ec15eb6a8f21&sni=itunes.apple.com&fp=firefox&type=tcp&flow=xtls-rprx-vision#Reality-aws
 </button>
 
     <script>

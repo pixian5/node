@@ -72,6 +72,27 @@ shasum -a 256 pages/c_deploy/sub.yaml | cut -c1-16
 - `PAGES_SRC_DIR` 默认值改成 `pages/c_deploy`（现在是 `/tmp/c_page`）
 - `.venv/bin/pip install blake3`
 
+## 当前状态（2026-09-25 本次更新）
+
+本次把订阅整体切到新服务器 `aws.sbbz.tech`，已推送并验证线上生效：
+
+- **删除** `l.sbbz.tech` 全部 7 个节点
+- **新增** `aws.sbbz.tech` 6 个节点：80-WS-直连免流-aws、443-WS-TLS-免流-aws、歇斯底里aws、XHTTP-CDN-aws优选域名（server 用 `cf.090227.xyz`）、XHTTP-Reality-aws、Reality-aws
+- **新 Reality 密钥对**（aws 服务器）：公钥 `MvldrbhFkWi5t-KZkW82-60qR8T5tId8QVfSW60iFlk`，short-id `7d21ec15eb6a8f21`
+- 住宅1 换到 `96.62.46.16:9803`（新账密，开 udp）；新增台湾、日本1-Ver.7；新增氪金机场 11 节点
+- 住宅入口改为选「台湾 / 🖤东京京X06」
+- rules 直连段收窄：`148.100.0.0/16` → `148.100.112.30/32`；`agentrouter.org` 指定走加拿大003
+
+推送后 **20 秒内**线上 hash 即与本地一致（`150305b4...`），说明 Git 集成构建很快。
+
+### 待办：dy worker 尚未同步
+
+`dy_worker.js` 里仍是 `l.sbbz.tech`（7 处）、旧 Reality 公钥 `IRn6xu8u...`、旧 sid `d5b2242f8d6a7641`，还有已废的 `bestcf.top`（NXDOMAIN）。
+按第 7 条教训，两个订阅源必须同步，否则 v2rayN 那边的节点全是失效的。需要时执行：
+```bash
+npx wrangler deploy dy_worker.js --name dy --compatibility-date 2026-09-25
+```
+
 ## 相关：另一个订阅源 dy.sbbz.tech 不走 Pages
 
 `dy.sbbz.tech` 是 **Cloudflare Worker**（名 `dy`），节点**硬编码**在 `dy_worker.js` 里，更新方式是：

@@ -85,13 +85,39 @@ shasum -a 256 pages/c_deploy/sub.yaml | cut -c1-16
 
 推送后 **20 秒内**线上 hash 即与本地一致（`150305b4...`），说明 Git 集成构建很快。
 
-### 待办：dy worker 尚未同步
+### dy worker 同步情况（更正）
 
-`dy_worker.js` 里仍是 `l.sbbz.tech`（7 处）、旧 Reality 公钥 `IRn6xu8u...`、旧 sid `d5b2242f8d6a7641`，还有已废的 `bestcf.top`（NXDOMAIN）。
-按第 7 条教训，两个订阅源必须同步，否则 v2rayN 那边的节点全是失效的。需要时执行：
+**先说一个教训**：本次一开始按本地 `dy_worker.js` 判断"dy 未同步"，这是**错的**——线上 dy 在 09-24 18:44 就已经被更新成 aws 版了，反而是本地文件落后于线上。
+判断线上 worker 到底是什么内容，**必须拉线上源码**，不能看本地文件：
+
 ```bash
-npx wrangler deploy dy_worker.js --name dy --compatibility-date 2026-09-25
+curl -s "https://api.cloudflare.com/client/v4/accounts/e16771787e0f6f85e8976ba3befb0c1b/workers/scripts/dy" \
+  -H "X-Auth-Email: xwn4@outlook.com" -H "X-Auth-Key: <Global API Key>"
 ```
+
+本次最终处理：本地 `dy_worker.js` 更新为 aws 版，并补上两个线上缺的参数（`443-WS-TLS` 的 `fp=chrome`、`XHTTP-CDN` 的 `host=awsvx2083.sbbz.tech&fp=firefox`），重新部署后线上与本地一致。
+
+### dy worker 的部署方法
+
+`npx wrangler deploy` **在本机跑不了**：wrangler 3 在非交互环境强制要求 `CLOUDFLARE_API_TOKEN`，而 `~/.wrangler/config/default.toml` 里存的是 Global API Key（legacy auth），它不认。要创建 API Token 得去 dashboard 手动建。
+
+改用 CF API 直接上传（等价，且不需要新令牌）：
+
+```bash
+# 1) 上传脚本（service-worker 格式：纯 JS body）
+curl -X PUT "https://api.cloudflare.com/client/v4/accounts/e16771787e0f6f85e8976ba3befb0c1b/workers/scripts/dy" \
+  -H "X-Auth-Email: xwn4@outlook.com" -H "X-Auth-Key: <Global API Key>" \
+  -H "Content-Type: application/javascript" --data-binary @dy_worker.js
+
+# 2) 【必做】上面这一步会把 compatibility_date 清空，必须补回（只接受 multipart）
+printf '%s' '{"compatibility_date":"2026-09-07","compatibility_flags":[],"usage_model":"standard","bindings":[]}' > /tmp/dy_settings.json
+curl -X PATCH "https://api.cloudflare.com/client/v4/accounts/e16771787e0f6f85e8976ba3befb0c1b/workers/scripts/dy/settings" \
+  -H "X-Auth-Email: xwn4@outlook.com" -H "X-Auth-Key: <Global API Key>" \
+  -F "settings=@/tmp/dy_settings.json;type=application/json"
+```
+
+自定义域绑定（`dy.sbbz.tech` → `dy`）是独立资源，**PUT 脚本不会动它**，可用
+`GET /accounts/{id}/workers/scripts/dy/domains` 确认。
 
 ## 相关：另一个订阅源 dy.sbbz.tech 不走 Pages
 
